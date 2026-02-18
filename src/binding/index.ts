@@ -1,11 +1,14 @@
+import { z } from "zod";
 import { Pin } from "../action/pin.action";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { parseVariableBinding, VariableBinding } from "./variable.binding";
+import { parseVariableBinding, VariableBindingScheme } from "./variable.binding";
+
+export const BindingScheme = VariableBindingScheme
 
 /**
  * Supported binding type union
  */
-export type Binding = VariableBinding
+export type Binding = z.infer<typeof BindingScheme>;
 
 export function parseBinding(binding: Binding, context: GScrapParseContext): Pin {
     switch(binding.type) {

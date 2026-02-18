@@ -1,44 +1,52 @@
 import { ElementHandle, Page } from "puppeteer";
-import { CommonAction } from "./common.action"
+import { CommonActionScheme } from "./common.action"
 import { countElements, getElement, getElements } from "../utils/parse.utils";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
+import { z } from "zod";
 
-/**
- * Selector descriptor - defines how the selector should be parsed.
- */
-export type ActionSelector = {
+export const ActionSelectorScheme = z.strictObject({
     /**
      * Specifies path in string.
      */
-    path: string
+    path: z.string(),
     /**
      * Type of path stored in path property.
      */
-    type: 'CSS' | 'XPath'
+    type: z.union([z.literal('CSS'), z.literal('XPath')]),
     /**
      * Should program stop it's execution if no selectors have been found?
      * Determines if following actions should be processed or control flow should return to first parent group action.
      */
-    optional?: boolean,
+    optional: z.boolean().optional(),
     /**
      * How many elements should be matched. Defaults to all.
      */
-    count?: number | "all"
+    count: z.union([z.number(), z.literal('all')]).optional(),
     /**
      * What strategy should be used when multiple elements have been matched. Defaults to cache
      */
-    mode?: "cache" | "requery",
+    mode: z.union([z.literal('cache'), z.literal('requery')]).optional(),
     /**
      * How many times the search for selector should be retried. Defaults to 3
      */
-    retries?: number
-}
+    retries: z.number().optional()
+})
 
-export type PinAction = {
-    type: 'pin',
-    selector: ActionSelector,
-    variable: string
-} & CommonAction
+/**
+ * Selector descriptor - defines how the selector should be parsed.
+ */
+export type ActionSelector = z.infer<typeof ActionSelectorScheme>;
+
+export const PinActionScheme = z.intersection(
+    z.strictObject({
+        type: z.literal('pin'),
+        selector: ActionSelectorScheme,
+        variable: z.string()
+    }),
+    CommonActionScheme
+)
+
+export type PinAction = z.infer<typeof PinActionScheme>;
 
 export class Pin {
     public readonly selector: ActionSelector;

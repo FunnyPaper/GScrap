@@ -2,15 +2,21 @@ import { Page, ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { logger } from "../logger";
-import { BoundAction } from "./bound.action"
+import { BoundActionScheme } from "./bound.action"
 import { Pin } from "./pin.action";
+import { z } from "zod";
+
+export const ClickActionScheme = z.intersection(
+    z.strictObject({
+        type: z.literal('click')
+    }),
+    BoundActionScheme
+)
 
 /**
  * Marks selected element to be clicked. Used to perform side effects.
  */
-export type ClickAction = {
-    type: 'click'
-} & BoundAction
+export type ClickAction = z.infer<typeof ClickActionScheme>;
 
 export async function parseClickAction(page: Page, action: ClickAction, context: GScrapParseContext): Promise<void> {
     let index: number = 0;

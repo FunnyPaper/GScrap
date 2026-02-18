@@ -3,18 +3,24 @@ import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { GScrapParseContextVisitor } from "../context/gscrap-parse.context.visitor";
 import { JSONFileWriteHandler } from "../io";
 import { logger } from "../logger";
-import { CommonAction } from "./common.action"
+import { CommonActionScheme } from "./common.action"
+import { z } from "zod";
+
+export const SaveActionScheme = z.intersection(
+    z.strictObject({
+        type: z.literal('save'),
+        /**
+         * File to save data into
+         */
+        filename: z.string()
+    }),
+    CommonActionScheme
+)
 
 /**
  * Saves the latest changes in the parsing context to the file
  */
-export type SaveAction = {
-    type: 'save',
-    /**
-     * File to save data into
-     */
-    filename: string
-} & CommonAction
+export type SaveAction = z.infer<typeof SaveActionScheme>;
 
 export async function parseSaveAction(page: Page, action: SaveAction, context: GScrapParseContext, parentHandle?: ElementHandle): Promise<boolean> {
     const fileHandler = new JSONFileWriteHandler({ filepath: action.filename, tabs: 4, append: false });

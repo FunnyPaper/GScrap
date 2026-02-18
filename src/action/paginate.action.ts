@@ -1,23 +1,32 @@
 import { Page, ElementHandle } from "puppeteer";
-import { Action, parseAction } from "."
+import { Action, ActionScheme, parseAction } from "."
 import { parseBinding } from "../binding";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { logger } from "../logger";
-import { BoundAction } from "./bound.action"
+import { BoundAction, BoundActionScheme } from "./bound.action"
 import { Pin } from "./pin.action";
+import { z } from "zod";
+
+export const PaginateActionScheme: z.ZodType<{ 
+    type: 'paginate',
+    actions: Action[]
+} & BoundAction> = z.intersection(
+    z.strictObject({
+        type: z.literal('paginate'),
+        /**
+         * Actions to execute in order.
+         */
+        actions: z.array(z.lazy(() => ActionScheme)),
+    }),
+    BoundActionScheme
+)
 
 /**
  * Action with paginate-like semantics. 
  * Executes actions in order. 
  * Loops until specified variable is no longer reachable.
  */
-export type PaginateAction = {
-    type: "paginate",
-    /**
-     * Actions to execute in order.
-     */
-    actions: Action[]
-} & BoundAction
+export type PaginateAction = z.infer<typeof PaginateActionScheme>;
 
 export async function parsePaginateAction(page: Page, action: PaginateAction, context: GScrapParseContext): Promise<void> {
     let index: number = 0;

@@ -7,12 +7,13 @@ import stealthPlugin from 'puppeteer-extra-plugin-stealth'
 import { existsSync, readFileSync } from 'fs';
 import { Page } from 'puppeteer';
 import { parseAction } from './action';
-import { GScrapConfig } from './config';
+import { GScrapConfig, GScrapConfigScheme } from './config';
 import { GScrapParseContext } from './context/gscrap-parse.context';
 import { GScrapParseContextVisitor } from './context/gscrap-parse.context.visitor';
 import { logger } from './logger';
 import { withBrowser } from './utils/browser.utils';
 import { withPage } from './utils/page.utils';
+import z from 'zod';
 
 puppeteer.use(stealthPlugin())
 
@@ -119,7 +120,12 @@ async function main() {
         return logger.error?.(`Supplied path does not exists. Path: ${args.f}`);
     } else {
         config = JSON.parse(readFileSync(args.f, 'utf8'));
+        config = GScrapConfigScheme.parse(config);
         //logger.debug?.(`Config loaded:\n${JSON.stringify(config, null, 4)}`);
+    }
+
+    if (!config) {
+        throw new Error('Missing config.');
     }
 
     if(config && !vars && varsLeft(config)) {
@@ -142,6 +148,11 @@ async function main() {
 }
 
 main().catch((error) => {
-    logger.error?.(error);
+    if (error instanceof z.ZodError) {
+        logger.error?.(JSON.stringify(error.issues, null, 4));
+    } else {
+        logger.error?.(error);
+    }
+    
     process.exit(1);
 });

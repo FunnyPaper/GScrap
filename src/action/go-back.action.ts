@@ -1,14 +1,20 @@
 import { Page, ElementHandle } from "puppeteer";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { logger } from "../logger";
-import { CommonAction } from "./common.action"
+import { CommonActionScheme } from "./common.action"
+import z from "zod";
+
+export const GoBackActionScheme = z.intersection(
+    z.strictObject({
+        type: z.literal('goBack')
+    }),
+    CommonActionScheme
+)
 
 /**
  * Action requesting the history change (going to the previous record)
  */
-export type GoBackAction = {
-    type: 'goBack'
-} & CommonAction
+export type GoBackAction = z.infer<typeof GoBackActionScheme>;
 
 export async function parseGoBackAction(page: Page, action: GoBackAction, context: GScrapParseContext, parentHandle?: ElementHandle): Promise<void> {
     logger.info?.('Going back to previous page...');
