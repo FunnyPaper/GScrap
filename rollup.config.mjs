@@ -4,6 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import preserveShebang from "rollup-plugin-preserve-shebang";
 import json from "@rollup/plugin-json";
+import { nodeExternals } from 'rollup-plugin-node-externals'
 
 /** @type {import('rollup').RollupOptions} */
 export default [
@@ -29,16 +30,15 @@ export default [
         input: "src/cli.ts",
         output: {
             file: "dist/cli.js",
-            format: "esm",
+            format: "cjs",
             sourcemap: true
         },
         plugins: [
+            nodeExternals(),
             preserveShebang(),
-            nodeResolve({ preferBuiltins: true }),
             json(),
-            commonjs(),
             typescript(),
-            terser()
-        ],
+            terser() 
+          ]
     }
 ]
