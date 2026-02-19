@@ -1,5 +1,8 @@
 import { Browser } from "puppeteer";
 import puppeteer from 'puppeteer-extra'
+import stealthPlugin from 'puppeteer-extra-plugin-stealth'
+
+puppeteer.use(stealthPlugin());
 
 export async function withBrowser<T = void>(task: (browser: Browser) => Promise<T>): Promise<T> {
     const browser = await puppeteer.launch({

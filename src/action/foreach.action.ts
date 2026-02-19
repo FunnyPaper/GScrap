@@ -1,8 +1,6 @@
-import { Page } from "puppeteer";
-import { Action, ActionScheme, parseAction } from ".";
+import { Action, ActionParseConfig, ActionScheme, parseAction } from ".";
 import { parseBinding } from "../binding";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { logger } from "../logger";
 import { BoundAction, BoundActionScheme } from "./bound.action";
 import { Pin } from "./pin.action";
 import { z } from "zod";
@@ -32,7 +30,7 @@ export const ForeachActionScheme: z.ZodType<{
  */
 export type ForeachAction = z.infer<typeof ForeachActionScheme>;
 
-export async function parseForeachAction(page: Page, action: ForeachAction, context: GScrapParseContext): Promise<void> {
+export async function parseForeachAction({ page, action, context, logger }: ActionParseConfig<ForeachAction>): Promise<void> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     await pin.use({
@@ -40,16 +38,16 @@ export async function parseForeachAction(page: Page, action: ForeachAction, cont
         task: async (): Promise<void> => {
             const childContext: GScrapParseContext = context.copy();
             childContext.setPin(action.scopedVariable, pin.at(index++));
-            logger.info?.(`Iterating over ${index}' element`);
+            logger?.info(`Iterating over ${index}' element`);
             await action.actions.reduce(async (acc: Promise<unknown>, action: Action, index: number): Promise<unknown> => {
                 await acc;
-                logger.info?.(`Iterating over ${index + 1}' foreach subaction`);
-                return await parseAction(page, action, childContext);
+                logger?.info(`Iterating over ${index + 1}' foreach subaction`);
+                return await parseAction({ page, action, context: childContext});
             }, Promise.resolve());
         }
     });
 
     if(index == 0) {
-        logger.warn?.('No elements found to be iterated over');
+        logger?.warn('No elements found to be iterated over');
     }
 }

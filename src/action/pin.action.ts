@@ -1,8 +1,9 @@
 import { ElementHandle, Page } from "puppeteer";
-import { CommonActionScheme } from "./common.action"
+import { CommonActionScheme } from "./common.action";
 import { countElements, getElement, getElements } from "../utils/parse.utils";
-import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { z } from "zod";
+import { ActionParseConfig } from ".";
+import { Logger } from "winston";
 
 export const ActionSelectorScheme = z.strictObject({
     /**
@@ -50,9 +51,11 @@ export type PinAction = z.infer<typeof PinActionScheme>;
 
 export class Pin {
     public readonly selector: ActionSelector;
+    private readonly logger?: Logger;
 
-    public constructor(selector: ActionSelector) {
+    public constructor(selector: ActionSelector, logger?: Logger) {
         this.selector = selector;
+        this.logger = logger;
     }
     
     public async use(config: {
@@ -78,14 +81,14 @@ export class Pin {
     private async *generate(page: Page, index: number) {
         if(this.selector.mode == 'requery') {
             for(
-                let i: number = index, handle: ElementHandle | null = await getElement(page, this.selector, i); 
+                let i: number = index, handle: ElementHandle | null = await getElement(page, this.selector, i, this.logger); 
                 handle; 
-                i++, handle = await getElement(page, this.selector, i)
+                i++, handle = await getElement(page, this.selector, i, this.logger)
             ) {
                 yield handle;
             }
         } else  {
-            const handles = await getElements(page, this.selector);
+            const handles = await getElements(page, this.selector, this.logger);
 
             for(let i: number = index; handles && handles[i]; i++) {
                 yield handles[i];
@@ -94,7 +97,7 @@ export class Pin {
     }
 
     public async count(page: Page): Promise<number> {
-        return countElements(page, this.selector);
+        return countElements(page, this.selector, this.logger);
     }
 
     public at(index: number): Pin {
@@ -110,6 +113,6 @@ export class Pin {
     }
 }
 
-export async function parsePinAction(page: Page, action: PinAction, context: GScrapParseContext) {
+export async function parsePinAction({ page, action, context, logger }: ActionParseConfig<PinAction>) {
     context.setPin(action.variable, action.selector);
 }

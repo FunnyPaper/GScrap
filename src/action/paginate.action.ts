@@ -1,9 +1,7 @@
-import { Page, ElementHandle } from "puppeteer";
-import { Action, ActionScheme, parseAction } from "."
+import { ElementHandle } from "puppeteer";
+import { Action, ActionParseConfig, ActionScheme, parseAction } from ".";
 import { parseBinding } from "../binding";
-import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { logger } from "../logger";
-import { BoundAction, BoundActionScheme } from "./bound.action"
+import { BoundAction, BoundActionScheme } from "./bound.action";
 import { Pin } from "./pin.action";
 import { z } from "zod";
 
@@ -28,15 +26,15 @@ export const PaginateActionScheme: z.ZodType<{
  */
 export type PaginateAction = z.infer<typeof PaginateActionScheme>;
 
-export async function parsePaginateAction(page: Page, action: PaginateAction, context: GScrapParseContext): Promise<void> {
+export async function parsePaginateAction({ page, action, context, logger }: ActionParseConfig<PaginateAction>): Promise<void> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     while(true) {
-        logger.info?.(`Invoking paginate subactions on page: ${++index}`);
+        logger?.info(`Invoking paginate subactions on page: ${++index}`);
         await action.actions.reduce(async (acc: Promise<unknown>, action: Action, index: number): Promise<unknown> => {
             await acc;
-            logger.info?.(`Iterating over ${index + 1}' paginate subaction`);
-            return await parseAction(page, action, context);
+            logger?.info(`Iterating over ${index + 1}' paginate subaction`);
+            return await parseAction({ page, action, context });
         }, Promise.resolve());
 
         const isNext: boolean = await pin.count(page) > 0;
@@ -46,7 +44,7 @@ export async function parsePaginateAction(page: Page, action: PaginateAction, co
                 page: page,
                 task: async (handle: ElementHandle): Promise<void> => {
                     if(await handle.isVisible()) {
-                        logger.info?.(`Heading over to next page...`);
+                        logger?.info(`Heading over to next page...`);
                         await handle.click();
                     } else {
                         visible = false;
@@ -62,5 +60,5 @@ export async function parsePaginateAction(page: Page, action: PaginateAction, co
         }
     }
 
-    logger.info?.(`No new page to iterate over`);
+    logger?.info(`No new page to iterate over`);
 }

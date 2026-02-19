@@ -1,10 +1,9 @@
-import { Page, ElementHandle } from "puppeteer";
+import { ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding";
-import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { logger } from "../logger";
-import { BoundActionScheme } from "./bound.action"
+import { BoundActionScheme } from "./bound.action";
 import { Pin } from "./pin.action";
 import { z } from "zod";
+import { ActionParseConfig } from ".";
 
 export const EvaluateActionScheme = z.intersection(
     z.strictObject({
@@ -25,27 +24,27 @@ export const EvaluateActionScheme = z.intersection(
  */
 export type EvaluateAction = z.infer<typeof EvaluateActionScheme>;
 
-export async function parseEvaluateAction(page: Page, action: EvaluateAction, context: GScrapParseContext): Promise<void> {
+export async function parseEvaluateAction({ page, action, context, logger }: ActionParseConfig<EvaluateAction>): Promise<void> {
     context.data['url'] = page.url();
-    logger.info?.(`Storing url:\n${context.data['url']}`);
+    logger?.info(`Storing url:\n${context.data['url']}`);
     
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     await pin.use({
         page: page, 
         task: async (handle: ElementHandle): Promise<void> => {    
-            logger.info?.(`Evaluating textContent of ${++index}' element...`);
+            logger?.info(`Evaluating textContent of ${++index}' element...`);
             const content: string | null = await handle.evaluate((element: any) => element.innerText || element.textContent || element);
             if(content) {
-                logger.info?.(`Found text:\n${content}`);
+                logger?.info(`Found text:\n${content}`);
                 context.data[action.elementAlias ?? action.binding.data] = content;
             } else {
-                logger.warn?.("No text has been found");
+                logger?.warn("No text has been found");
             }
         }
     });
 
     if(index == 0) {
-        logger.warn?.('No elements found to be evaluated');
+        logger?.warn('No elements found to be evaluated');
     }
 }

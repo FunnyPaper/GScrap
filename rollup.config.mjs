@@ -4,7 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import terser from "@rollup/plugin-terser";
 import preserveShebang from "rollup-plugin-preserve-shebang";
 import json from "@rollup/plugin-json";
-import { nodeExternals } from 'rollup-plugin-node-externals'
+import { nodeExternals } from 'rollup-plugin-node-externals';
 
 /** @type {import('rollup').RollupOptions} */
 export default [
@@ -21,6 +21,7 @@ export default [
         plugins: [
             nodeResolve({ preferBuiltins: true }),
             commonjs(),
+            json(),
             typescript(),
             terser()
         ]

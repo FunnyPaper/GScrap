@@ -12,8 +12,8 @@ import { parseRefreshAction, RefreshAction, RefreshActionScheme } from "./refres
 import { parseSaveAction, SaveAction, SaveActionScheme } from "./save.action";
 import { parseScrollAction, ScrollAction, ScrollActionScheme } from "./scroll.action";
 import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { logger } from "../logger";
-import z from "zod";
+import { z } from "zod";
+import { Logger } from "winston";
 
 /**
  * Marks element to be a subject of an Action.
@@ -51,38 +51,40 @@ export const ActionScheme: z.ZodType<Action> = z.union([
     PinActionScheme
 ])
 
-export async function parseAction(page: Page, action: Action, context: GScrapParseContext): Promise<boolean> { 
-    logger.info?.(`Parsing action named: ${action.name ?? '---'}`);
+export type ActionParseConfig<A extends Action = Action> = { page: Page, action: A, context: GScrapParseContext, logger?: Logger }
+
+export async function parseAction({ page, action, context, logger }: ActionParseConfig): Promise<boolean> { 
+    logger?.info?.(`Parsing action named: ${action.name ?? '---'}`);
     
     if(action.delay) {
-        logger.info?.(`Delaying execution by: ${action.delay}`);
+        logger?.info?.(`Delaying execution by: ${action.delay}`);
         await new Promise<void>((resolve: () => void) => setTimeout(resolve, action.delay));
     }   
 
     switch(action.type) {
-        case "evaluate": await parseEvaluateAction(page, action, context);
+        case "evaluate": await parseEvaluateAction({ page, action, context, logger });
             break;
-        case "click": await parseClickAction(page, action, context);
+        case "click": await parseClickAction({ page, action, context, logger });
             break;
-        case "fill": await parseFillAction(page, action, context);
+        case "fill": await parseFillAction({ page, action, context, logger });
             break;
-        case "scroll": await parseScrollAction(page, action, context);
+        case "scroll": await parseScrollAction({ page, action, context, logger });
             break;
-        case "foreach": await parseForeachAction(page, action, context);
+        case "foreach": await parseForeachAction({ page, action, context, logger });
             break;
-        case "paginate": await parsePaginateAction(page, action, context);
+        case "paginate": await parsePaginateAction({ page, action, context, logger });
             break;
-        case "goBack": await parseGoBackAction(page, action, context);
+        case "goBack": await parseGoBackAction({ page, action, context, logger });
             break;
-        case 'goForward': await parseGoForwardAction(page, action, context);
+        case 'goForward': await parseGoForwardAction({ page, action, context, logger });
             break;
-        case 'goTo': await parseGoToAction(page, action, context);
+        case 'goTo': await parseGoToAction({ page, action, context, logger });
             break;
-        case "refresh": await parseRefreshAction(page, action, context);
+        case "refresh": await parseRefreshAction({ page, action, context, logger });
             break;
-        case 'save': await parseSaveAction(page, action, context);
+        case 'save': await parseSaveAction({ page, action, context, logger });
             break;
-        case 'pin': await parsePinAction(page, action, context);
+        case 'pin': await parsePinAction({ page, action, context, logger });
             break;
     }
 

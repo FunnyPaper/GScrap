@@ -11,9 +11,16 @@ export class GScrapParseContextVisitor {
 
     visit(target: GScrapParseContext, context: object) {
         if(!target.children || target.children.length == 0) {
-            this._data.push({...context, ...target.data});
+            const data = { ...context, ...target.data };
+
+            if (Object.keys(data).length > 0) {
+                this._data.push(data);
+            }
         } else {
             target.children?.forEach(child => this.visit(child, {...context, ...target.data }));
         }
+
+        // Clear data to not clutter memory so much
+        target.clearData();
     }
 }

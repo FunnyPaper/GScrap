@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync, WriteStream } from "fs";
+import { createWriteStream, existsSync, mkdirSync, readFileSync, writeFileSync, WriteStream } from "fs";
 import { dirname } from "path";
 
 export interface IWriteHandler<T> {
@@ -25,33 +25,14 @@ export abstract class FileWriteHandler<T> implements IWriteHandler<T> {
 
 export class JSONFileWriteHandler extends FileWriteHandler<object> {
     private tabs?: number;
-    private append: boolean;
+    private _stream: WriteStream;
 
-    public constructor(config: FileWriterHandlerConfig & { tabs?: number, append?: boolean }) {
+    public constructor(config: FileWriterHandlerConfig & { tabs?: number }) {
         super(config);
-        this.tabs = config.tabs;
-        this.append = config.append ?? true;
+        this._stream = createWriteStream(this._filepath, { flags: 'a' });
     }
 
     public async write(obj: object): Promise<void> {
-        let json: unknown[];
-        let result: string;
-
-        if(this.append) {
-            try {
-                const content = readFileSync(this._filepath);
-                json = JSON.parse(content.toString());
-            } catch {
-                json = [];
-            }
-
-            json.push(obj);
-
-            result = JSON.stringify(json, null, this.tabs);
-        } else {
-            result = JSON.stringify(obj, null, this.tabs);
-        }
-        
-        writeFileSync(this._filepath, result, { encoding: 'utf8', flag: 'w+' });
+        this._stream.write(JSON.stringify(obj, null, this.tabs) + '\n');
     }
 }

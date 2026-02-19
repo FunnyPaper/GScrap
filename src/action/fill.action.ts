@@ -1,11 +1,9 @@
-import { Page, ElementHandle } from "puppeteer"
-import { Action } from "."
+import { ElementHandle } from "puppeteer"
 import { parseBinding } from "../binding"
-import { GScrapParseContext } from "../context/gscrap-parse.context"
-import { logger } from "../logger"
-import { BoundAction, BoundActionScheme } from "./bound.action"
+import { BoundActionScheme } from "./bound.action"
 import { Pin } from "./pin.action"
-import z from "zod"
+import { z } from "zod"
+import { Action, ActionParseConfig } from "."
 
 export const FillActionScheme = z.intersection(
     z.strictObject({
@@ -66,8 +64,8 @@ export const NumberFormActionScheme = z.intersection(
  */
 export type NumberFormAction = z.infer<typeof NumberFormActionScheme>;
 
-export async function parseFillAction(page: Page, action: Extract<Action, { fillType: string }>, context: GScrapParseContext): Promise<void> {    
-    logger.info?.('Filling elements...');
+export async function parseFillAction({ page, action, context, logger }: ActionParseConfig<Extract<Action, { fillType: string }>>): Promise<void> {    
+    logger?.info('Filling elements...');
 
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
@@ -76,15 +74,15 @@ export async function parseFillAction(page: Page, action: Extract<Action, { fill
         task: async (handle: ElementHandle): Promise<void> => {
             switch(action.fillType) {
                 case "string": 
-                    logger.info?.(`${++index}' text field filled with: ${action.data}`);
+                    logger?.info(`${++index}' text field filled with: ${action.data}`);
                     await handle.type(action.data as string);
                     break;
                 case "number": 
-                    logger.info?.(`${++index}' Number field filled with ${action.data}`);
+                    logger?.info(`${++index}' Number field filled with ${action.data}`);
                     await handle.type(action.data.toString());
                     break;
                 case "boolean": 
-                    logger.info?.(`${++index}' Checkable field set with ${action.data}`);
+                    logger?.info(`${++index}' Checkable field set with ${action.data}`);
                     await handle.evaluate((element: Element, data: boolean) => {
                         if(element instanceof HTMLInputElement) {
                             element.checked = data;
@@ -96,6 +94,6 @@ export async function parseFillAction(page: Page, action: Extract<Action, { fill
     });
 
     if(index == 0) {
-        logger.warn?.('No elements found to be filled');
+        logger?.warn('No elements found to be filled');
     }
 }

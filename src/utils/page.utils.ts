@@ -1,9 +1,20 @@
 import { Browser, Page } from "puppeteer";
 import UserAgent from 'user-agents';
-import { logger } from "../logger";
+import { Logger } from "winston";
 
-export async function withPage<T = void>(browser: Browser, task: (page: Page) => Promise<T>): Promise<T> {
+export async function withPage<T = void>(browser: Browser, task: (page: Page) => Promise<T>, logger?: Logger): Promise<T> {
     const page = await browser.newPage();
+    await page.setRequestInterception(true);
+    page.on('request', request => {
+        const shouldSkip = ['fetch', 'image', 'media', 'font']
+            .includes(request.resourceType());
+            
+        if (shouldSkip) {
+            request.abort();
+        } else {
+            request.continue();
+        }
+    });
 
     const userAgent = new UserAgent({ deviceCategory: 'desktop' }).toString();
     page.setUserAgent(userAgent);
@@ -11,7 +22,7 @@ export async function withPage<T = void>(browser: Browser, task: (page: Page) =>
     
     page.on('framenavigated', frame => {
         if(frame === page.mainFrame()) {
-            logger.info?.(`Navigation change occured. Current url: ${frame.url()}`);
+            logger?.info(`Navigation change occured. Current url: ${frame.url()}`);
         }
     });
 

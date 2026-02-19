@@ -1,3 +1,4 @@
+import { Logger } from "winston";
 import { Pin, ActionSelector } from "../action/pin.action";
 import { GScrapParseContextVisitor } from "./gscrap-parse.context.visitor";
 
@@ -39,6 +40,10 @@ export class GScrapParseContext {
         return root;
     }
 
+    clearData() {
+        this._data = {};
+    }
+
     copy(): GScrapParseContext {
         const child = new GScrapParseContext({ parent: this });
 
@@ -48,12 +53,12 @@ export class GScrapParseContext {
     }
 
     setPin(name: string, pin: Pin): void 
-    setPin(name: string, selector: ActionSelector): void
-    setPin(name: string, binding: ActionSelector | Pin): void {
+    setPin(name: string, selector: ActionSelector, logger?: Logger): void
+    setPin(name: string, binding: ActionSelector | Pin, logger?: Logger): void {
         if(binding instanceof Pin) {
             this._pins.set(name, binding);    
         } else {
-            this._pins.set(name, new Pin(binding));
+            this._pins.set(name, new Pin(binding, logger));
         }
     }
 

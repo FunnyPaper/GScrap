@@ -1,26 +1,26 @@
 import { ElementHandle, Page } from "puppeteer";
 import { ActionSelector } from "../action/pin.action";
-import { logger } from "../logger"
+import { Logger } from "winston";
 
-export async function tryWaitForSelector(page: Page, selector: ActionSelector, path: string) {
-    logger?.info?.(`Try waiting for selector: \n${JSON.stringify(selector, null, 4)}`);
+export async function tryWaitForSelector(page: Page, selector: ActionSelector, path: string, logger?: Logger) {
+    logger?.info(`Try waiting for selector: \n${JSON.stringify(selector, null, 4)}`);
     for(let i = 0; i < (selector.retries ?? 3); i++) {
         try {
             await page.waitForSelector(path, { timeout: 3000 });
-            logger.info?.('Selector has been found');
+            logger?.info('Selector has been found');
             break;
         } catch(e) {
             if(i + 1 < (selector.retries ?? 3)) {
-                logger.warn?.(`Selector not found. Retries attempt: ${i + 1}`);
+                logger?.warn(`Selector not found. Retries attempt: ${i + 1}`);
                 continue;
             }
 
             if(selector.optional) {
-                logger.warn?.('Selector not found in given attempts. Proceeding further...');
+                logger?.warn('Selector not found in given attempts. Proceeding further...');
                 return null;
             }
 
-            logger.error?.('Required selector not found. Exiting program...');
+            logger?.error('Required selector not found. Exiting program...');
             throw e;
         }
     }
@@ -28,19 +28,19 @@ export async function tryWaitForSelector(page: Page, selector: ActionSelector, p
     return null;
 }
 
-export async function getElements(page: Page, selector: ActionSelector): Promise<ElementHandle<Element>[] | null> {
-    logger.info?.(`Retrieving ${selector.count ?? 'all'} element/-s matching the selector: \n${JSON.stringify(selector, null, 4)}`);
+export async function getElements(page: Page, selector: ActionSelector, logger?: Logger): Promise<ElementHandle<Element>[] | null> {
+    logger?.info(`Retrieving ${selector.count ?? 'all'} element/-s matching the selector: \n${JSON.stringify(selector, null, 4)}`);
 
     const path: string = selector.type == 'XPath'
         ? `::-p-xpath(${selector.path})`
         : selector.path;
 
-    await tryWaitForSelector(page, selector, path);
+    await tryWaitForSelector(page, selector, path, logger);
 
     const elements: ElementHandle[] = await page.$$(path, { isolate: false });
 
     if(elements.length == 0) {
-        logger.warn?.('0 elements have feen found');
+        logger?.warn('0 elements have feen found');
     }
 
     if(selector.count != 'all') {
@@ -50,12 +50,12 @@ export async function getElements(page: Page, selector: ActionSelector): Promise
     return elements;  
 }
 
-export async function countElements(page: Page, selector: ActionSelector): Promise<number> {
+export async function countElements(page: Page, selector: ActionSelector, logger?: Logger): Promise<number> {
     const path: string = selector.type == 'XPath'
         ? `::-p-xpath(${selector.path})`
         : selector.path;
 
-    await tryWaitForSelector(page, selector, path);
+    await tryWaitForSelector(page, selector, path, logger);
 
     let count: number = 0;
     if(selector.type == 'XPath') {
@@ -66,12 +66,12 @@ export async function countElements(page: Page, selector: ActionSelector): Promi
 
     const result = selector.count ? selector.count == 'all' ? count : Math.min(count, selector.count) : count;
 
-    logger.info?.(`${result} element/-s have been found for selector: \n${JSON.stringify(selector, null, 4)}`);
+    logger?.info(`${result} element/-s have been found for selector: \n${JSON.stringify(selector, null, 4)}`);
     return result;
 }
 
-export async function getElement(page: Page, selector: ActionSelector, index: number): Promise<ElementHandle | null> {
-    logger.info?.(`Retrieving ${index + 1}' element matching the selector: \n${JSON.stringify(selector, null, 4)}`);
+export async function getElement(page: Page, selector: ActionSelector, index: number, logger?: Logger): Promise<ElementHandle | null> {
+    logger?.info(`Retrieving ${index + 1}' element matching the selector: \n${JSON.stringify(selector, null, 4)}`);
 
     if(selector.count != null && selector.count != 'all' && index >= selector.count) {
         return null;
@@ -81,12 +81,12 @@ export async function getElement(page: Page, selector: ActionSelector, index: nu
         ? `::-p-xpath((${selector.path})[${index + 1}])`
         : `(${selector.path}):nth-of-type(${index + 1})`;
 
-    await tryWaitForSelector(page, selector, path);
+    await tryWaitForSelector(page, selector, path, logger);
 
     const result = page.$(path);
 
     if(!result) {
-        logger.warn?.("No element matching the selector has been found");
+        logger?.warn("No element matching the selector has been found");
     }
 
     return result;

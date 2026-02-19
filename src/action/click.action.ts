@@ -1,10 +1,9 @@
-import { Page, ElementHandle } from "puppeteer";
+import { ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding";
-import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { logger } from "../logger";
-import { BoundActionScheme } from "./bound.action"
+import { BoundActionScheme } from "./bound.action";
 import { Pin } from "./pin.action";
 import { z } from "zod";
+import { ActionParseConfig } from ".";
 
 export const ClickActionScheme = z.intersection(
     z.strictObject({
@@ -18,20 +17,19 @@ export const ClickActionScheme = z.intersection(
  */
 export type ClickAction = z.infer<typeof ClickActionScheme>;
 
-export async function parseClickAction(page: Page, action: ClickAction, context: GScrapParseContext): Promise<void> {
+export async function parseClickAction({ page, action, context, logger }: ActionParseConfig<ClickAction>): Promise<void> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     
     await pin.use({
         page: page,
         task: async (handle: ElementHandle): Promise<void> => {
-            logger.info?.(`Clicking ${++index}' element...`);
-            await handle.evaluate(el => (el as HTMLElement).click())
-            //await handle.click();
+            logger?.info(`Clicking ${++index}' element...`);
+            await handle.evaluate(el => (el as HTMLElement).click());
         }
     })
 
     if (index == 0) {
-        logger.warn?.('No elements found to be clicked');
+        logger?.warn('No elements found to be clicked');
     }
 }

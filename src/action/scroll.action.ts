@@ -1,10 +1,9 @@
-import { Page, ElementHandle } from "puppeteer";
+import { ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding";
-import { GScrapParseContext } from "../context/gscrap-parse.context";
-import { logger } from "../logger";
-import { BoundActionScheme } from "./bound.action"
+import { BoundActionScheme } from "./bound.action";
 import { Pin } from "./pin.action";
-import z from "zod";
+import { z } from "zod";
+import { ActionParseConfig } from ".";
 
 export const ScrollActionScheme = z.intersection(
     z.strictObject({
@@ -25,13 +24,13 @@ export const ScrollActionScheme = z.intersection(
  */
 export type ScrollAction = z.infer<typeof ScrollActionScheme>;
 
-export async function parseScrollAction(page: Page, action: ScrollAction, context: GScrapParseContext): Promise<void> {
+export async function parseScrollAction({ page, action, context, logger }: ActionParseConfig<ScrollAction>): Promise<void> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     await pin.use({
         page: page,
         task: async (handle: ElementHandle): Promise<void> => {
-            logger.info?.(`Scrolling ${index + 1}' element by: ${action.scrollBy}`);
+            logger?.info(`Scrolling ${index + 1}' element by: ${action.scrollBy}`);
             await handle.evaluate((element: Element, data: { x: number, y: number }): void => {
                 element.scrollBy({ top: data.x, left: data.y });
             }, action.scrollBy);
@@ -39,6 +38,6 @@ export async function parseScrollAction(page: Page, action: ScrollAction, contex
     });
 
     if(index == 0) {
-        logger.warn?.('No elements found to be scrolled');
+        logger?.warn('No elements found to be scrolled');
     }
 }

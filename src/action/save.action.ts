@@ -1,10 +1,8 @@
-import { Page, ElementHandle } from "puppeteer";
-import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { GScrapParseContextVisitor } from "../context/gscrap-parse.context.visitor";
 import { JSONFileWriteHandler } from "../io";
-import { logger } from "../logger";
-import { CommonActionScheme } from "./common.action"
+import { CommonActionScheme } from "./common.action";
 import { z } from "zod";
+import { ActionParseConfig } from ".";
 
 export const SaveActionScheme = z.intersection(
     z.strictObject({
@@ -22,14 +20,21 @@ export const SaveActionScheme = z.intersection(
  */
 export type SaveAction = z.infer<typeof SaveActionScheme>;
 
-export async function parseSaveAction(page: Page, action: SaveAction, context: GScrapParseContext, parentHandle?: ElementHandle): Promise<boolean> {
-    const fileHandler = new JSONFileWriteHandler({ filepath: action.filename, tabs: 4, append: false });
+// TODO: Needs to be cleared up later
+const writeHandlers = new Map();
+
+export async function parseSaveAction({ page, action, context, logger }: ActionParseConfig<SaveAction>): Promise<boolean> {
+    if(!writeHandlers.has(action.filename)) {
+        writeHandlers.set(action.filename, new JSONFileWriteHandler({ filepath: action.filename, tabs: 4 }));
+    }
+    
+    const fileHandler = writeHandlers.get(action.filename);
 
     const visitor = new GScrapParseContextVisitor();
     context.root.visit(visitor);
     
-    logger.info?.(`Saving evaluation data to: ${__dirname}/${action.filename}`);
-    fileHandler.write(visitor.data);
+    logger?.info(`Saving evaluation data to: ${__dirname}/${action.filename}`);
+    fileHandler.write(visitor.data[0]);
 
     return false;
 }

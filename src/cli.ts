@@ -2,48 +2,44 @@
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import * as Package from "../package.json";
-import puppeteer from 'puppeteer-extra'
-import stealthPlugin from 'puppeteer-extra-plugin-stealth'
 import { existsSync, readFileSync } from 'fs';
-import { Page } from 'puppeteer';
-import { parseAction } from './action';
 import { GScrapConfig, GScrapConfigScheme } from './config';
+import { logger } from './logger';
+import z from 'zod';
+import { updateVars, varsLeft } from './utils/vars.utils';
+import { Page } from 'puppeteer';
+import { Logger } from 'winston';
+import { parseAction } from './action';
 import { GScrapParseContext } from './context/gscrap-parse.context';
 import { GScrapParseContextVisitor } from './context/gscrap-parse.context.visitor';
-import { logger } from './logger';
 import { withBrowser } from './utils/browser.utils';
 import { withPage } from './utils/page.utils';
-import z from 'zod';
 
-puppeteer.use(stealthPlugin())
-
-
-
-async function parse(config: GScrapConfig): Promise<object> {
-    logger.info?.("Welcome to GScrap!");
-    logger.info?.("Launching new browser...");
+export async function parse(config: GScrapConfig, logger?: Logger): Promise<object> {
+    logger?.info("Welcome to GScrap!");
+    logger?.info("Launching new browser...");
 
     return await withBrowser(async (browser) => {
-        logger.info?.("Browser launched!\nLaunching new page...");
+        logger?.info("Browser launched!\nLaunching new page...");
 
         const parseContext: GScrapParseContext = new GScrapParseContext();
 
         await withPage(browser, async (page: Page) => {
-            logger.info?.(`Page launched! Changing location to '${config.startingPage}' ...`);
+            logger?.info(`Page launched! Changing location to '${config.startingPage}' ...`);
             await page.setViewport({   
-              width: Math.floor(1024 + Math.random() * 100),
-              height: Math.floor(768 + Math.random() * 100), 
+                width: Math.floor(1024 + Math.random() * 100),
+                height: Math.floor(768 + Math.random() * 100), 
             });
 
             await page.goto(config.startingPage, { waitUntil: ['networkidle2', 'domcontentloaded', 'load'] });
     
-            logger.info?.(`'${config.startingPage}' has been set successfully as a current location!`);
-            logger.info?.('Browsing modules...');
+            logger?.info(`'${config.startingPage}' has been set successfully as a current location!`);
+            logger?.info('Browsing modules...');
     
             for(const action of config.actions) {
-                await parseAction(page, action, parseContext);
+                await parseAction({ page, action, context: parseContext, logger });
             }
-        });
+        }, logger);
 
         // Retrieve data
         const visitor = new GScrapParseContextVisitor();
@@ -51,39 +47,6 @@ async function parse(config: GScrapConfig): Promise<object> {
 
         return visitor.data;
     })
-}
-
-function updateVars(config: any, vars: any): void {    
-    Object.keys(config).forEach((key) => {
-        if (typeof config[key] == 'string') {
-            const property: String = config[key];
-            const templates = property.match(/(?<=\{\{)(.*?)(?=\}\})/g);
-            if(templates) {
-                templates.forEach(template => {
-                    const parts: string[] = template.split(':');
-                    if(parts[0] in vars) {
-                        config[key] = config[key].replace(`\{\{${template}\}\}`, vars[parts[0]]);
-                    } else if(parts.length > 1) {
-                        config[key] = config[key].replace(`\{\{${template}\}\}`, parts.slice(1).join(':'));
-                    }
-                });
-            }
-        } else {
-           updateVars(config[key], vars); 
-        }
-    });
-}
-
-function varsLeft(config: any): boolean {
-    return !!Object.keys(config).find((key) => {
-        if (typeof config[key] == 'string') {
-            const property: String = config[key];
-            const templates = property.match(/\{\{(.*?)\}\}/g);
-            return !!templates;
-        } 
-
-        return varsLeft(config[key]);
-    });
 }
 
 async function main() {
@@ -94,14 +57,22 @@ async function main() {
       .help("h")
       .alias("h", "help")
       .option("f", {
-          string: true,
+          type: 'string',
           alias: 'filepath',
-          default: 'gscrap-config.json'
+          default: 'gscrap-config.json',
+          description: 'Path to the scrap config.'
       })
       .option("vars", {
-          string: true,
+          type: 'string',
           alias: 'variables',
-          default: 'gscrap-vars.json'
+          default: 'gscrap-vars.json',
+          description: 'Path to the vars file. Vars is a key-value object used to replace template variables inside scrap config.'
+      })
+      .option("s", {
+        type: 'boolean',
+        alias: 'silent',
+        default: false,
+        description: 'Logger inclusion. If silent is true then messages from parsing process are not logged to the console. Cli messages and errors surpasses this option.'
       })
       .argv
 
@@ -110,41 +81,31 @@ async function main() {
     let vars: object | null = null;
 
     if(!existsSync(args.vars)) {
-        return logger.error?.(`Supplied path does not exists. Path: ${args.vars}`);
+        return logger?.error(`Supplied path does not exists. Path: ${args.vars}`);
     } else {
         vars = JSON.parse(readFileSync(args.vars, 'utf8'));
-        logger.debug?.(`Vars loaded:\n${JSON.stringify(vars, null, 4)}`);
     }
 
     if(!existsSync(args.f)) {
-        return logger.error?.(`Supplied path does not exists. Path: ${args.f}`);
+        return logger?.error(`Supplied path does not exists. Path: ${args.f}`);
     } else {
         config = JSON.parse(readFileSync(args.f, 'utf8'));
         config = GScrapConfigScheme.parse(config);
-        //logger.debug?.(`Config loaded:\n${JSON.stringify(config, null, 4)}`);
     }
 
-    if (!config) {
-        throw new Error('Missing config.');
+    if(!vars && varsLeft(config)) {
+        logger?.warn('No vars have been supplied despite config using them.');
     }
 
-    if(config && !vars && varsLeft(config)) {
-        return logger.error?.('No vars have been supplied despite config using them.');
-    }
-
-    if(config && vars && varsLeft(config)) {
+    if(vars && varsLeft(config)) {
         updateVars(config, vars);
 
-        //logger.debug?.(`Vars embedded:\n${JSON.stringify(config, null, 4)}`);
-
         if(varsLeft(config)) {
-            return logger.error?.('Not all vars have been supplied.');
+            logger?.warn('Not all vars have been supplied.');
         }
     }
 
-    if(config) {
-        const result = await parse(config);
-    }
+    await parse(config, args.s ? undefined : logger);
 }
 
 main().catch((error) => {
