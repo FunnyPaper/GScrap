@@ -14,10 +14,13 @@ export const RefreshActionScheme = z.intersection(
  */
 export type RefreshAction = z.infer<typeof RefreshActionScheme>;
 
-export async function parseRefreshAction({ page, action, context, logger }: ActionParseConfig<RefreshAction>): Promise<void> {
+export async function parseRefreshAction({ page, action, context, logger }: ActionParseConfig<RefreshAction>): Promise<boolean> {
     logger?.info(`Refreshing page...`);
+
     await Promise.all([
         page.waitForNavigation({ waitUntil: ['networkidle2', 'domcontentloaded', 'load'] }),
         page.reload(),
     ]);
+
+    return false;
 }

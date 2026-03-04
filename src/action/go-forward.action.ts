@@ -14,10 +14,12 @@ export const GoForwardActionScheme = z.intersection(
  */
 export type GoForwardAction = z.infer<typeof GoForwardActionScheme>;
 
-export async function parseGoForwardAction({ page, action, context, logger }: ActionParseConfig<GoForwardAction>): Promise<void> {
+export async function parseGoForwardAction({ page, action, context, logger }: ActionParseConfig<GoForwardAction>): Promise<boolean> {
     logger?.info('Going forward to previous page...');
     await Promise.all([
         page.waitForNavigation({ waitUntil: ['networkidle2', 'domcontentloaded', 'load'] }),
         page.goForward(),
     ]);
+
+    return false;
 }

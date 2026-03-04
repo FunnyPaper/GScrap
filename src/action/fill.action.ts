@@ -64,7 +64,7 @@ export const NumberFormActionScheme = z.intersection(
  */
 export type NumberFormAction = z.infer<typeof NumberFormActionScheme>;
 
-export async function parseFillAction({ page, action, context, logger }: ActionParseConfig<Extract<Action, { fillType: string }>>): Promise<void> {    
+export async function parseFillAction({ page, action, context, logger }: ActionParseConfig<Extract<Action, { fillType: string }>>): Promise<boolean> {    
     logger?.info('Filling elements...');
 
     let index: number = 0;
@@ -96,4 +96,6 @@ export async function parseFillAction({ page, action, context, logger }: ActionP
     if(index == 0) {
         logger?.warn('No elements found to be filled');
     }
+
+    return false;
 }

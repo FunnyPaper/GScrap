@@ -30,7 +30,7 @@ export const ForeachActionScheme: z.ZodType<{
  */
 export type ForeachAction = z.infer<typeof ForeachActionScheme>;
 
-export async function parseForeachAction({ page, action, context, logger }: ActionParseConfig<ForeachAction>): Promise<void> {
+export async function parseForeachAction({ page, action, context, logger }: ActionParseConfig<ForeachAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     await pin.use({
@@ -42,7 +42,7 @@ export async function parseForeachAction({ page, action, context, logger }: Acti
             await action.actions.reduce(async (acc: Promise<unknown>, action: Action, index: number): Promise<unknown> => {
                 await acc;
                 logger?.info(`Iterating over ${index + 1}' foreach subaction`);
-                return await parseAction({ page, action, context: childContext});
+                return await parseAction({ page, action, context: childContext, logger });
             }, Promise.resolve());
         }
     });
@@ -50,4 +50,6 @@ export async function parseForeachAction({ page, action, context, logger }: Acti
     if(index == 0) {
         logger?.warn('No elements found to be iterated over');
     }
+
+    return false;
 }

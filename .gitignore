@@ -142,3 +142,6 @@ vite.config.ts.timestamp-*
 # Project specifics
 /data
 /config
+
+# Sqlite files
+*.sqlite

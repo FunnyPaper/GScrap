@@ -1,45 +1,43 @@
 import typescript from "@rollup/plugin-typescript";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import commonjs from "@rollup/plugin-commonjs";
-import terser from "@rollup/plugin-terser";
-import preserveShebang from "rollup-plugin-preserve-shebang";
 import json from "@rollup/plugin-json";
-import { nodeExternals } from 'rollup-plugin-node-externals';
+import preserveShebang from 'rollup-plugin-preserve-shebang';
 
 /** @type {import('rollup').RollupOptions} */
 export default [
     // Lib
     {
         input: "src/index.ts",
-        output: [
-            {
-                file: "dist/index.js",
-                format: "esm",
-                sourcemap: true
-            }
-        ],
+        output: {
+            dir: 'dist/lib',
+            format: "cjs",
+            sourcemap: true,
+            exports: 'named'
+        },
+        external: ['better-sqlite3'],
         plugins: [
             nodeResolve({ preferBuiltins: true }),
-            commonjs(),
+            commonjs({ defaultIsModuleExports: true, ignoreDynamicRequires: true }),
             json(),
-            typescript(),
-            terser()
+            typescript({ tsconfig: 'tsconfig.lib.json' })
         ]
     },
     // Cli
     {
         input: "src/cli.ts",
         output: {
-            file: "dist/cli.js",
+            dir: 'dist/cli',
             format: "cjs",
             sourcemap: true
         },
+        external: ['gscrap'],
         plugins: [
-            nodeExternals(),
+            nodeResolve({ preferBuiltins: true }),
             preserveShebang(),
+            commonjs({ defaultIsModuleExports: true }),
             json(),
-            typescript(),
-            terser() 
-          ]
+            typescript({ tsconfig: 'tsconfig.cli.json' })
+        ]
     }
 ]

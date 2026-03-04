@@ -3,50 +3,21 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 import * as Package from "../package.json";
 import { existsSync, readFileSync } from 'fs';
-import { GScrapConfig, GScrapConfigScheme } from './config';
-import { logger } from './logger';
-import z from 'zod';
-import { updateVars, varsLeft } from './utils/vars.utils';
-import { Page } from 'puppeteer';
+import { GScrapConfig, GScrapConfigScheme } from 'gscrap/config';
+import { logger } from 'gscrap/logger';
+import { z } from 'zod';
+import { updateVars, varsLeft } from 'gscrap/utils/vars.utils';
 import { Logger } from 'winston';
-import { parseAction } from './action';
-import { GScrapParseContext } from './context/gscrap-parse.context';
-import { GScrapParseContextVisitor } from './context/gscrap-parse.context.visitor';
-import { withBrowser } from './utils/browser.utils';
-import { withPage } from './utils/page.utils';
+import { GScrapRunner } from 'gscrap/runner';
+import { GScrapRecord } from 'gscrap/store/istore';
 
-export async function parse(config: GScrapConfig, logger?: Logger): Promise<object> {
-    logger?.info("Welcome to GScrap!");
-    logger?.info("Launching new browser...");
+export async function parse(config: GScrapConfig, logger?: Logger): Promise<GScrapRecord[]> {
+    const runner = new GScrapRunner(config, 'cli');
 
-    return await withBrowser(async (browser) => {
-        logger?.info("Browser launched!\nLaunching new page...");
+    runner.on('log', ({ type, message }) => logger?.[type](message));
+    await runner.run();
 
-        const parseContext: GScrapParseContext = new GScrapParseContext();
-
-        await withPage(browser, async (page: Page) => {
-            logger?.info(`Page launched! Changing location to '${config.startingPage}' ...`);
-            await page.setViewport({   
-                width: Math.floor(1024 + Math.random() * 100),
-                height: Math.floor(768 + Math.random() * 100), 
-            });
-
-            await page.goto(config.startingPage, { waitUntil: ['networkidle2', 'domcontentloaded', 'load'] });
-    
-            logger?.info(`'${config.startingPage}' has been set successfully as a current location!`);
-            logger?.info('Browsing modules...');
-    
-            for(const action of config.actions) {
-                await parseAction({ page, action, context: parseContext, logger });
-            }
-        }, logger);
-
-        // Retrieve data
-        const visitor = new GScrapParseContextVisitor();
-        parseContext.visit(visitor);
-
-        return visitor.data;
-    })
+    return runner.data;
 }
 
 async function main() {

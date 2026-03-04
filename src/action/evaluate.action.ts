@@ -24,7 +24,7 @@ export const EvaluateActionScheme = z.intersection(
  */
 export type EvaluateAction = z.infer<typeof EvaluateActionScheme>;
 
-export async function parseEvaluateAction({ page, action, context, logger }: ActionParseConfig<EvaluateAction>): Promise<void> {
+export async function parseEvaluateAction({ page, action, context, logger }: ActionParseConfig<EvaluateAction>): Promise<boolean> {
     context.data['url'] = page.url();
     logger?.info(`Storing url:\n${context.data['url']}`);
     
@@ -47,4 +47,6 @@ export async function parseEvaluateAction({ page, action, context, logger }: Act
     if(index == 0) {
         logger?.warn('No elements found to be evaluated');
     }
+
+    return false;
 }

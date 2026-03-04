@@ -14,7 +14,7 @@ export const GoBackActionScheme = z.intersection(
  */
 export type GoBackAction = z.infer<typeof GoBackActionScheme>;
 
-export async function parseGoBackAction({ page, action, context, logger }: ActionParseConfig<GoBackAction>): Promise<void> {
+export async function parseGoBackAction({ page, action, context, logger }: ActionParseConfig<GoBackAction>): Promise<boolean> {
     logger?.info('Going back to previous page...');
     const [_, response ] = await Promise.all([
         page.waitForNavigation({ waitUntil: ['networkidle2', 'domcontentloaded', 'load'] }),
@@ -24,4 +24,6 @@ export async function parseGoBackAction({ page, action, context, logger }: Actio
     if(response?.url().startsWith('chrome-error://')) {
         await parseGoBackAction({ page, action, context });
     }
+
+    return false;
 }

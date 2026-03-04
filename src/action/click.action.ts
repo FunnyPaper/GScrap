@@ -17,7 +17,7 @@ export const ClickActionScheme = z.intersection(
  */
 export type ClickAction = z.infer<typeof ClickActionScheme>;
 
-export async function parseClickAction({ page, action, context, logger }: ActionParseConfig<ClickAction>): Promise<void> {
+export async function parseClickAction({ page, action, context, logger }: ActionParseConfig<ClickAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     
@@ -32,4 +32,6 @@ export async function parseClickAction({ page, action, context, logger }: Action
     if (index == 0) {
         logger?.warn('No elements found to be clicked');
     }
+
+    return false;
 }

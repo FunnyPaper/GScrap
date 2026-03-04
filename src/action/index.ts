@@ -14,6 +14,9 @@ import { parseScrollAction, ScrollAction, ScrollActionScheme } from "./scroll.ac
 import { GScrapParseContext } from "../context/gscrap-parse.context";
 import { z } from "zod";
 import { Logger } from "winston";
+import { parseStageUrlAction, StageUrlAction, StageUrlActionScheme } from "./stage-url.action";
+import { parseProcessUrlAction, ProcessUrlAction, ProcessUrlActionScheme } from "./process-url.action";
+import { ExportAction, ExportActionScheme, parseExportAction } from "./export.action";
 
 /**
  * Marks element to be a subject of an Action.
@@ -33,6 +36,9 @@ export type Action =
     | RefreshAction
     | GoToAction
     | PinAction
+    | StageUrlAction
+    | ProcessUrlAction
+    | ExportAction
 
 export const ActionScheme: z.ZodType<Action> = z.union([
     EvaluateActionScheme,
@@ -48,7 +54,10 @@ export const ActionScheme: z.ZodType<Action> = z.union([
     GoForwardActionScheme,
     RefreshActionScheme,
     GoToActionScheme,
-    PinActionScheme
+    PinActionScheme,
+    StageUrlActionScheme,
+    ProcessUrlActionScheme,
+    ExportActionScheme
 ])
 
 export type ActionParseConfig<A extends Action = Action> = { page: Page, action: A, context: GScrapParseContext, logger?: Logger }
@@ -62,30 +71,36 @@ export async function parseAction({ page, action, context, logger }: ActionParse
     }   
 
     switch(action.type) {
-        case "evaluate": await parseEvaluateAction({ page, action, context, logger });
-            break;
-        case "click": await parseClickAction({ page, action, context, logger });
-            break;
-        case "fill": await parseFillAction({ page, action, context, logger });
-            break;
-        case "scroll": await parseScrollAction({ page, action, context, logger });
-            break;
-        case "foreach": await parseForeachAction({ page, action, context, logger });
-            break;
-        case "paginate": await parsePaginateAction({ page, action, context, logger });
-            break;
-        case "goBack": await parseGoBackAction({ page, action, context, logger });
-            break;
-        case 'goForward': await parseGoForwardAction({ page, action, context, logger });
-            break;
-        case 'goTo': await parseGoToAction({ page, action, context, logger });
-            break;
-        case "refresh": await parseRefreshAction({ page, action, context, logger });
-            break;
-        case 'save': await parseSaveAction({ page, action, context, logger });
-            break;
-        case 'pin': await parsePinAction({ page, action, context, logger });
-            break;
+        case "evaluate": 
+            return await parseEvaluateAction({ page, action, context, logger });
+        case "click":
+            return await parseClickAction({ page, action, context, logger })
+        case "fill":
+            return await parseFillAction({ page, action, context, logger });
+        case "scroll": 
+            return await parseScrollAction({ page, action, context, logger });
+        case "foreach": 
+            return await parseForeachAction({ page, action, context, logger });
+        case "paginate": 
+            return await parsePaginateAction({ page, action, context, logger });
+        case "goBack": 
+            return await parseGoBackAction({ page, action, context, logger });
+        case 'goForward': 
+            return await parseGoForwardAction({ page, action, context, logger });
+        case 'goTo': 
+            return await parseGoToAction({ page, action, context, logger });
+        case "refresh": 
+            return await parseRefreshAction({ page, action, context, logger });
+        case 'save': 
+            return await parseSaveAction({ page, action, context, logger });
+        case 'pin': 
+            return await parsePinAction({ page, action, context, logger });
+        case 'stageUrl': 
+            return await parseStageUrlAction({ page, action, context, logger });
+        case "processUrl": 
+            return await parseProcessUrlAction({ page, action, context, logger });
+        case 'export':
+            return await parseExportAction({ page, action, context, logger });
     }
 
     return false;

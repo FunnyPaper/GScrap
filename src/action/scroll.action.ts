@@ -24,7 +24,7 @@ export const ScrollActionScheme = z.intersection(
  */
 export type ScrollAction = z.infer<typeof ScrollActionScheme>;
 
-export async function parseScrollAction({ page, action, context, logger }: ActionParseConfig<ScrollAction>): Promise<void> {
+export async function parseScrollAction({ page, action, context, logger }: ActionParseConfig<ScrollAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     await pin.use({
@@ -40,4 +40,6 @@ export async function parseScrollAction({ page, action, context, logger }: Actio
     if(index == 0) {
         logger?.warn('No elements found to be scrolled');
     }
+
+    return false;
 }

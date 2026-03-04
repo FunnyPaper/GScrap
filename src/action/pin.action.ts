@@ -113,6 +113,7 @@ export class Pin {
     }
 }
 
-export async function parsePinAction({ page, action, context, logger }: ActionParseConfig<PinAction>) {
-    context.setPin(action.variable, action.selector);
+export async function parsePinAction({ page, action, context, logger }: ActionParseConfig<PinAction>): Promise<boolean> {
+    context.setPin(action.variable, action.selector, logger);
+    return false;
 }

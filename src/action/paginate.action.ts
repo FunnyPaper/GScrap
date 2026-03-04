@@ -26,7 +26,7 @@ export const PaginateActionScheme: z.ZodType<{
  */
 export type PaginateAction = z.infer<typeof PaginateActionScheme>;
 
-export async function parsePaginateAction({ page, action, context, logger }: ActionParseConfig<PaginateAction>): Promise<void> {
+export async function parsePaginateAction({ page, action, context, logger }: ActionParseConfig<PaginateAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
     while(true) {
@@ -34,7 +34,7 @@ export async function parsePaginateAction({ page, action, context, logger }: Act
         await action.actions.reduce(async (acc: Promise<unknown>, action: Action, index: number): Promise<unknown> => {
             await acc;
             logger?.info(`Iterating over ${index + 1}' paginate subaction`);
-            return await parseAction({ page, action, context });
+            return await parseAction({ page, action, context, logger });
         }, Promise.resolve());
 
         const isNext: boolean = await pin.count(page) > 0;
@@ -61,4 +61,5 @@ export async function parsePaginateAction({ page, action, context, logger }: Act
     }
 
     logger?.info(`No new page to iterate over`);
+    return false;
 }

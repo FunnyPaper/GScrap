@@ -1,6 +1,7 @@
 import { Logger } from "winston";
 import { Pin, ActionSelector } from "../action/pin.action";
 import { GScrapParseContextVisitor } from "./gscrap-parse.context.visitor";
+import { IStore } from "../store/istore";
 
 /**
  * Data storage working as a part of parsing process.
@@ -10,13 +11,21 @@ export class GScrapParseContext {
     private _data: { [key: string]: string | null }
     private _parent?: GScrapParseContext
     private _children?: GScrapParseContext[]
+    private _stagedUrls: Map<string, string[]>;
 
-    public constructor(config?: {
-        parent?: GScrapParseContext
+    private _store: IStore;
+
+    public constructor(config: {
+        parent?: GScrapParseContext,
+        stagedUrls?: Map<string, string[]>,
+        store: IStore
     }) {
         this._pins = new Map();
         this._data = {};
-        this._parent = config?.parent;
+        this._stagedUrls ??= new Map();
+
+        this._parent = config.parent;
+        this._store = config.store;
     }
 
     public get data(): { [key: string]: string | null } {
@@ -40,12 +49,20 @@ export class GScrapParseContext {
         return root;
     }
 
+    public get store(): IStore {
+        return this._store;
+    }
+
     clearData() {
         this._data = {};
     }
 
     copy(): GScrapParseContext {
-        const child = new GScrapParseContext({ parent: this });
+        const child = new GScrapParseContext({ 
+            parent: this,
+            stagedUrls: this._stagedUrls,
+            store: this._store
+        });
 
         (this._children ??= []).push(child);
 
@@ -69,6 +86,20 @@ export class GScrapParseContext {
                 return pin;
             }
         }
+    }
+
+    stageUrls(group: string, hrefs: string[]) {
+        if(!this._stagedUrls.has(group)) {
+            this._stagedUrls.set(group, []);
+        }
+
+        const staged = this._stagedUrls.get(group)!;
+        const distinct = new Set([...staged, ...hrefs]);
+        this._stagedUrls.set(group, [...distinct])
+    }
+
+    getUrls(group: string) {
+        return this._stagedUrls.get(group) ?? [];
     }
 
     visit(visitor: GScrapParseContextVisitor, context: object = {}) {

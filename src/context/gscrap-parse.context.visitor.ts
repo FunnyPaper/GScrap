@@ -1,3 +1,4 @@
+import { GScrapRecord, IStore } from "../store/istore";
 import { GScrapParseContext } from "./gscrap-parse.context";
 
 /**
@@ -5,6 +6,12 @@ import { GScrapParseContext } from "./gscrap-parse.context";
  */
 export class GScrapParseContextVisitor {
     private _data: object[] = []
+    private _store: IStore;
+    
+    public constructor(store: IStore) {
+        this._store = store;
+    }
+
     public get data(): object[] {
         return this._data;
     }
@@ -21,6 +28,7 @@ export class GScrapParseContextVisitor {
         }
 
         // Clear data to not clutter memory so much
+        this._store.insertMany(this._data as GScrapRecord[])
         target.clearData();
     }
 }
