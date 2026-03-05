@@ -1,0 +1,63 @@
+{
+    "name": "@gscrap/core",
+    "version": "0.3.0",
+    "description": "",
+    "type": "module",
+    "bugs": {
+        "url": "https://github.com/FunnyPaper/GScrap/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/FunnyPaper/GScrap.git"
+    },
+    "license": "MIT",
+    "author": "FunnyPaper",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/types/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "scripts": {
+        "clean": "rm -rf dist",
+        "prebuild": "npm run clean",
+        "build": "tsc && node build.js",
+        "test": "jest"
+    },
+    "dependencies": {
+        "better-sqlite3": "12.6.x",
+        "puppeteer": "24.23.x",
+        "puppeteer-cluster": "0.25.x",
+        "puppeteer-extra": "3.3.x",
+        "puppeteer-extra-plugin": "3.2.x",
+        "puppeteer-extra-plugin-stealth": "2.11.x",
+        "user-agents": "1.1.x",
+        "winston-daily-rotate-file": "5.0.x",
+        "yargs": "18.0.x"
+    },
+    "peerDependencies": {
+        "winston": "3.19.x",
+        "zod": "4.3.x"
+    },
+    "devDependencies": {
+        "@types/better-sqlite3": "7.6.x",
+        "@types/jest": "30.0.x",
+        "@types/node": "24.7.x",
+        "@types/user-agents": "1.0.x",
+        "@types/yargs": "17.0.x",
+        "esbuild": "0.27.x",
+        "jest": "30.2.x",
+        "jest-environment-jsdom": "30.2.x",
+        "ts-jest": "29.4.x",
+        "tslib": "2.8.x",
+        "typescript": "5.9.x",
+        "winston": "3.19.x",
+        "zod": "4.3.x"
+    }
+}

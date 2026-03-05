@@ -1,9 +1,0 @@
-{
-    "extends": ["./tsconfig.json"],
-    "include": ["src/**/*.ts"],
-    "exclude": ["src/cli.ts"],
-    "compilerOptions": {
-        "outDir": "dist/lib",
-        "declarationDir": "dist/lib/types"
-    }
-}

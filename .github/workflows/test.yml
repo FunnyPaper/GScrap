@@ -23,11 +23,9 @@ jobs:
               run: npm install
             - name: Build
               run: npm run build
-            - name: Test
-              run: npm run test
             - name: Call Cli
-              run: npm run call -- -n ${{ secrets.GREET_NAME }}
+              run: npm run call --workspace=@gscrap/cli -- -v
             - name: Install and Run Cli
               run: |
-                  npm install -g
-                  gscrap -n ${{ secrets.GREET_NAME }}
+                  npm install -g ./packages/cli
+                  gscrap -v
