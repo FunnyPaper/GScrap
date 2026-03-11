@@ -26,6 +26,7 @@
         "prebuild": "npm run clean",
         "build": "node build.js",
         "postbuild": "chmod +x dist/index.js",
+        "prepare": "npm run build",
         "test": "jest"
     },
     "dependencies": {
