@@ -31,11 +31,13 @@ export async function parsePaginateAction({ page, action, context, logger }: Act
     const pin: Pin = parseBinding(action.binding, context);
     while(true) {
         logger?.info(`Invoking paginate subactions on page: ${++index}`);
-        await action.actions.reduce(async (acc: Promise<unknown>, action: Action, index: number): Promise<unknown> => {
-            await acc;
+        await action.actions.reduce(async (acc: Promise<boolean>, action: Action, index: number): Promise<boolean> => {
+            if (await acc) return acc;
             logger?.info(`Iterating over ${index + 1}' paginate subaction`);
             return await parseAction({ page, action, context, logger });
-        }, Promise.resolve());
+        }, Promise.resolve(context.cancelled));
+
+        if (context.cancelled) return context.cancelled;
 
         const isNext: boolean = await pin.count(page) > 0;
         if (isNext) {

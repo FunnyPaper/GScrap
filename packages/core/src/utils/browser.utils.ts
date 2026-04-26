@@ -1,10 +1,8 @@
+import "./stealth-plugins.js";
 import { Browser } from "puppeteer";
 import puppeteerExtra from 'puppeteer-extra';
-import stealthPlugin from 'puppeteer-extra-plugin-stealth';
 
 const puppeteer = puppeteerExtra.default;
-
-puppeteer.use(stealthPlugin());
 
 export const PuppeteerLaunchOptions: string[] = [
     '--no-sandbox', 

@@ -48,6 +48,8 @@ export async function parseProcessUrlAction({ page, action, context, logger }: A
     })
 
     await cluster.task(async ({ page, data: url }) => {
+        if (context.cancelled) return;
+
         const userAgent = new UserAgent({ deviceCategory: 'desktop' }).toString();
         page.setUserAgent(userAgent);
 
@@ -59,11 +61,12 @@ export async function parseProcessUrlAction({ page, action, context, logger }: A
             page.goto(url)
         ]);
 
-        await action.actions.reduce(async (acc: Promise<unknown>, action: Action, index: number): Promise<unknown> => {
-            await acc;
+        if (context.cancelled) return;
+        await action.actions.reduce(async (acc: Promise<boolean>, action: Action, index: number): Promise<boolean> => {
+            if (await acc) return acc;
             logger?.info(`Iterating over ${index + 1}' process url subaction`);
             return await parseAction({ page, action, context: childContext, logger });
-        }, Promise.resolve());
+        }, Promise.resolve(context.cancelled));
     })
 
 
