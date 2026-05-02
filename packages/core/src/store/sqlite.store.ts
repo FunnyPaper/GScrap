@@ -14,12 +14,12 @@ export class SQLiteStore implements IStore {
     private _getAllStatement: sq3.Statement<[], { url: string, data: string }>;
     private _countStatement: sq3.Statement<[], { c: number }>;
 
-    public constructor(id: string) {
+    public constructor(id: string, appDir: string) {
         this._id = id;
-        this._db = new sq3(resolve(process.cwd(), `./gscrap.${id}.sqlite`));
+        this._db = new sq3(resolve(appDir, `./gscrap.${id}.sqlite`));
 
         this._db.exec(`
-            PRAGMA journam_mode = MEMORY;
+            PRAGMA journal_mode = MEMORY;
             PRAGMA synchronous = OFF;
             
             DROP TABLE IF EXISTS records;

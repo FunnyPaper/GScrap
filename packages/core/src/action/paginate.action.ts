@@ -41,20 +41,33 @@ export async function parsePaginateAction({ page, action, context, logger }: Act
 
         const isNext: boolean = await pin.count(page) > 0;
         if (isNext) {
-            let visible: boolean = true;
+            let clickedSuccessfully = false;
             await pin.use({
                 page: page,
                 task: async (handle: ElementHandle): Promise<void> => {
-                    if(await handle.isVisible()) {
-                        logger?.info(`Heading over to next page...`);
-                        await handle.click();
-                    } else {
-                        visible = false;
+                    if (clickedSuccessfully) return;
+
+                    const isIntersecting = await handle.isIntersectingViewport();
+                    const isVisible = await handle.isVisible();
+
+                    if(isVisible && isIntersecting) {
+                        try {
+                          logger?.info(`Heading over to next page...`);
+                          await Promise.all([
+                            handle.click({ delay: 50 }),
+                            page.waitForNetworkIdle({ idleTime: 500 }).catch(() => {}),
+                          ]);
+
+                          clickedSuccessfully = true;
+                        } catch(e) {
+                          logger?.error(`Click failed: ${e}`);
+                        }
                     }
                 }
             });
 
-            if(!visible) {
+            if(!clickedSuccessfully) {
+                logger?.warn('Found elements via XPath, but none were clickable/visible. Breaking.')
                 break;
             }
         } else {

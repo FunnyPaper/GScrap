@@ -31,7 +31,8 @@
     },
     "dependencies": {
         "@gscrap/core": "*",
-        "yargs": "18.0.x"
+        "yargs": "18.0.x",
+        "winston-daily-rotate-file": "5.0.x"
     },
     "devDependencies": {
         "@types/jest": "30.0.x",

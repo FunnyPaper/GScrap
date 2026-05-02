@@ -1,6 +1,6 @@
 {
     "name": "@gscrap/core",
-    "version": "0.3.1",
+    "version": "0.3.2",
     "description": "",
     "type": "module",
     "bugs": {
@@ -38,8 +38,7 @@
         "puppeteer-extra": "3.3.x",
         "puppeteer-extra-plugin": "3.2.x",
         "puppeteer-extra-plugin-stealth": "2.11.x",
-        "user-agents": "1.1.x",
-        "winston-daily-rotate-file": "5.0.x"
+        "user-agents": "1.1.x"
     },
     "peerDependencies": {
         "winston": "3.19.x",

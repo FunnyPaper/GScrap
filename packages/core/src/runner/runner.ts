@@ -40,14 +40,6 @@ class GScrapRunnerStore extends SQLiteStore {
         super.insert(record);
         this._runner.emit('resultUpdate', { data: record });
     }
-
-    public override insertMany(records: GScrapRecord[]): void {
-        super.insertMany(records);
-
-        for (const record of records) {
-            this._runner.emit('resultUpdate', { data: record });
-        }
-    }
 }
 
 export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
@@ -58,11 +50,11 @@ export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
     private readonly _store: IStore;
     private _run!: Promise<void>;
     
-    public constructor(config: GScrapConfig, sessionId: string) {
+    public constructor(config: GScrapConfig, sessionId: string, appDir: string) {
         super();
 
         this._config = config;
-        this._store = new GScrapRunnerStore(this, sessionId);
+        this._store = new GScrapRunnerStore(this, sessionId, appDir);
         this._parseContext = new GScrapParseContext({ store: this._store });
         this._logger = createLogger({
             level: 'info',
@@ -96,7 +88,7 @@ export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
             this._run = withBrowser(async (browser) => {
                 this._logger.info("Browser launched!");
                 this._logger.info("Launching new page...");
-        
+
                 await withPage(browser, async (page: Page) => {
                     this._logger.info(`Page launched! Changing location to '${this._config.startingPage}' ...`);
                     await page.setViewport({   
@@ -114,7 +106,7 @@ export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
                         if (shouldStop) break;
                     }
                 }, this._logger);
-
+                
                 if(this._parseContext.cancelled) {
                     this.emit('statusChange', { status: GScrapRunnerStatuses.CANCELLED });
                 } else {

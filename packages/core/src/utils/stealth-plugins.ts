@@ -15,9 +15,9 @@ import NavigatorPluginsPlugin from 'puppeteer-extra-plugin-stealth/evasions/navi
 import NavigatorVendorPlugin from 'puppeteer-extra-plugin-stealth/evasions/navigator.vendor/index.js';
 import NavigatorWebdriverPlugin from 'puppeteer-extra-plugin-stealth/evasions/navigator.webdriver/index.js';
 import SourceurlPlugin from 'puppeteer-extra-plugin-stealth/evasions/sourceurl/index.js';
-import UserAgentOverridePlugin from 'puppeteer-extra-plugin-stealth/evasions/user-agent-override/index.js';
 import WebglVendorPlugin from 'puppeteer-extra-plugin-stealth/evasions/webgl.vendor/index.js';
 import WindowOuterdimensionsPlugin from 'puppeteer-extra-plugin-stealth/evasions/window.outerdimensions/index.js';
+import UserAgentOverridePlugin from 'puppeteer-extra-plugin-stealth/evasions/user-agent-override/index.js';
 import UserPreferencesPlugin from 'puppeteer-extra-plugin-user-preferences/index.js';
 import UserDataDirPlugin from 'puppeteer-extra-plugin-user-data-dir/index.js';
 
@@ -36,8 +36,10 @@ puppeteer.use(NavigatorPluginsPlugin());
 puppeteer.use(NavigatorVendorPlugin());
 puppeteer.use(NavigatorWebdriverPlugin());
 puppeteer.use(SourceurlPlugin());
-puppeteer.use(UserAgentOverridePlugin());
 puppeteer.use(WebglVendorPlugin());
 puppeteer.use(WindowOuterdimensionsPlugin());
+
+// Following set of plugins are used for generating valid user agents but this project already sets user agents with other library
+puppeteer.use(UserAgentOverridePlugin());
 puppeteer.use(UserPreferencesPlugin());
 puppeteer.use(UserDataDirPlugin());
