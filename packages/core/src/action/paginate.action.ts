@@ -5,7 +5,7 @@ import { BoundAction, BoundActionScheme } from "./bound.action.js";
 import { Pin } from "./pin.action.js";
 import { z } from "zod";
 
-export const PaginateActionScheme: z.ZodType<{ 
+export const PaginateActionScheme: z.ZodType<{
     type: 'paginate',
     actions: Action[]
 } & BoundAction> = z.intersection(
@@ -26,15 +26,15 @@ export const PaginateActionScheme: z.ZodType<{
  */
 export type PaginateAction = z.infer<typeof PaginateActionScheme>;
 
-export async function parsePaginateAction({ page, action, context, logger }: ActionParseConfig<PaginateAction>): Promise<boolean> {
+export async function parsePaginateAction({ page, action, context, logger, globalOptions }: ActionParseConfig<PaginateAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
-    while(true) {
+    while (true) {
         logger?.info(`Invoking paginate subactions on page: ${++index}`);
         await action.actions.reduce(async (acc: Promise<boolean>, action: Action, index: number): Promise<boolean> => {
             if (await acc) return acc;
             logger?.info(`Iterating over ${index + 1}' paginate subaction`);
-            return await parseAction({ page, action, context, logger });
+            return await parseAction({ page, action, context, logger, globalOptions });
         }, Promise.resolve(context.cancelled));
 
         if (context.cancelled) return context.cancelled;
@@ -50,23 +50,23 @@ export async function parsePaginateAction({ page, action, context, logger }: Act
                     const isIntersecting = await handle.isIntersectingViewport();
                     const isVisible = await handle.isVisible();
 
-                    if(isVisible && isIntersecting) {
+                    if (isVisible && isIntersecting) {
                         try {
-                          logger?.info(`Heading over to next page...`);
-                          await Promise.all([
-                            handle.click({ delay: 50 }),
-                            page.waitForNetworkIdle({ idleTime: 500 }).catch(() => {}),
-                          ]);
+                            logger?.info(`Heading over to next page...`);
+                            await Promise.all([
+                                handle.click({ delay: 50 }),
+                                page.waitForNetworkIdle({ idleTime: 500 }).catch(() => { }),
+                            ]);
 
-                          clickedSuccessfully = true;
-                        } catch(e) {
-                          logger?.error(`Click failed: ${e}`);
+                            clickedSuccessfully = true;
+                        } catch (e) {
+                            logger?.error(`Click failed: ${e}`);
                         }
                     }
                 }
             });
 
-            if(!clickedSuccessfully) {
+            if (!clickedSuccessfully) {
                 logger?.warn('Found elements via XPath, but none were clickable/visible. Breaking.')
                 break;
             }

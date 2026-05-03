@@ -1,6 +1,6 @@
 {
     "name": "@gscrap/core",
-    "version": "0.3.2",
+    "version": "0.3.3",
     "description": "",
     "type": "module",
     "bugs": {
@@ -37,8 +37,7 @@
         "puppeteer-cluster": "0.25.x",
         "puppeteer-extra": "3.3.x",
         "puppeteer-extra-plugin": "3.2.x",
-        "puppeteer-extra-plugin-stealth": "2.11.x",
-        "user-agents": "1.1.x"
+        "puppeteer-extra-plugin-stealth": "2.11.x"
     },
     "peerDependencies": {
         "winston": "3.19.x",
@@ -48,7 +47,6 @@
         "@types/better-sqlite3": "7.6.x",
         "@types/jest": "30.0.x",
         "@types/node": "24.7.x",
-        "@types/user-agents": "1.0.x",
         "esbuild": "0.27.x",
         "jest": "30.2.x",
         "jest-environment-jsdom": "30.2.x",

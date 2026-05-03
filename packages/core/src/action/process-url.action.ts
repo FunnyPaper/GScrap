@@ -3,13 +3,12 @@ import { z } from "zod";
 import { CommonAction, CommonActionScheme } from "./common.action.js";
 import { GScrapParseContext } from "../context/gscrap-parse.context.js";
 import { Cluster } from "puppeteer-cluster";
-import UserAgent from "user-agents";
-import { PuppeteerIgnoreArgs, PuppeteerLaunchOptions } from "../utils/browser.utils.js";
+import { getBrowserExecutablePath, PuppeteerIgnoreArgs, PuppeteerLaunchOptions } from "../utils/browser.utils.js";
 
-export const ProcessUrlActionScheme: z.ZodType<{ 
+export const ProcessUrlActionScheme: z.ZodType<{
     type: 'processUrl',
     actions: Action[],
-    group: string
+    group: string,
 } & CommonAction> = z.intersection(
     z.strictObject({
         type: z.literal('processUrl'),
@@ -20,8 +19,8 @@ export const ProcessUrlActionScheme: z.ZodType<{
         /** 
          * Stage storage name to retrieve urls from
         */
-        group: z.string()
-    }), 
+        group: z.string(),
+    }),
     CommonActionScheme
 )
 
@@ -32,14 +31,24 @@ export const ProcessUrlActionScheme: z.ZodType<{
  */
 export type ProcessUrlAction = z.infer<typeof ProcessUrlActionScheme>;
 
-export async function parseProcessUrlAction({ page, action, context, logger }: ActionParseConfig<ProcessUrlAction>): Promise<boolean> {
+export async function parseProcessUrlAction({ page, action, context, logger, globalOptions }: ActionParseConfig<ProcessUrlAction>): Promise<boolean> {
+    const { headless = false, cacheDir } = globalOptions || {};
+
     const hrefs = context.getUrls(action.group);
     logger?.info(`Hrefs to process: ${hrefs}`);
     const cluster = await Cluster.launch({
         concurrency: Cluster.CONCURRENCY_CONTEXT,
         maxConcurrency: 5,
         puppeteerOptions: {
-            args: PuppeteerLaunchOptions, 
+            ...(cacheDir && {
+                executablePath: getBrowserExecutablePath(cacheDir),
+                env: {
+                    PUPPETEER_CACHE_DIR: cacheDir,
+                    PUPPETEER_EXECUTABLE_PATH: getBrowserExecutablePath(cacheDir)
+                },
+            }),
+            headless: headless,
+            args: PuppeteerLaunchOptions,
             ignoreDefaultArgs: PuppeteerIgnoreArgs
         },
         retryLimit: 3,
@@ -49,9 +58,6 @@ export async function parseProcessUrlAction({ page, action, context, logger }: A
 
     await cluster.task(async ({ page, data: url }) => {
         if (context.cancelled) return;
-
-        const userAgent = new UserAgent({ deviceCategory: 'desktop' }).toString();
-        page.setUserAgent(userAgent);
 
         logger?.info(`Processing url: ${url}`);
         const childContext: GScrapParseContext = context.copy();
@@ -65,7 +71,7 @@ export async function parseProcessUrlAction({ page, action, context, logger }: A
         await action.actions.reduce(async (acc: Promise<boolean>, action: Action, index: number): Promise<boolean> => {
             if (await acc) return acc;
             logger?.info(`Iterating over ${index + 1}' process url subaction`);
-            return await parseAction({ page, action, context: childContext, logger });
+            return await parseAction({ page, action, context: childContext, logger, globalOptions });
         }, Promise.resolve(context.cancelled));
     })
 

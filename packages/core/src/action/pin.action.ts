@@ -57,20 +57,20 @@ export class Pin {
         this.selector = selector;
         this.logger = logger;
     }
-    
+
     public async use(config: {
-        page: Page, 
+        page: Page,
         task: (handle: ElementHandle) => Promise<void>
     }): Promise<void> {
         const { page, task } = config;
 
-        for(let i: number = 0, errors: number = 0; errors < 3; errors++) {
+        for (let i: number = 0, errors: number = 0; errors < 3; errors++) {
             try {
                 for await (let handle of this.generate(page, i)) {
                     await task(handle);
                     i++
                 }
-                
+
                 break;
             } catch {
                 continue;
@@ -79,18 +79,18 @@ export class Pin {
     }
 
     private async *generate(page: Page, index: number) {
-        if(this.selector.mode == 'requery') {
-            for(
-                let i: number = index, handle: ElementHandle | null = await getElement(page, this.selector, i, this.logger); 
-                handle; 
+        if (this.selector.mode == 'requery') {
+            for (
+                let i: number = index, handle: ElementHandle | null = await getElement(page, this.selector, i, this.logger);
+                handle;
                 i++, handle = await getElement(page, this.selector, i, this.logger)
             ) {
                 yield handle;
             }
-        } else  {
+        } else {
             const handles = await getElements(page, this.selector, this.logger);
 
-            for(let i: number = index; handles && handles[i]; i++) {
+            for (let i: number = index; handles && handles[i]; i++) {
                 yield handles[i];
             }
         }
@@ -101,11 +101,11 @@ export class Pin {
     }
 
     public at(index: number): Pin {
-        const selector: ActionSelector = {...this.selector};
-        
-        if(selector.type == 'CSS') {
+        const selector: ActionSelector = { ...this.selector };
+
+        if (selector.type == 'CSS') {
             selector.path = `${selector.path}:nth-of-type(${index + 1})`;
-        } else if(selector.type == 'XPath') {
+        } else if (selector.type == 'XPath') {
             selector.path = `(${selector.path})[${index + 1}]`;
         }
 

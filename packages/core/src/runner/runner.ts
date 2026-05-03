@@ -50,7 +50,7 @@ export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
     private readonly _store: IStore;
     private _run!: Promise<void>;
     
-    public constructor(config: GScrapConfig, sessionId: string, appDir: string) {
+    public constructor(config: GScrapConfig, sessionId: string, appDir: string, private globalOptions?: { headless?: boolean, cacheDir?: string }) {
         super();
 
         this._config = config;
@@ -102,7 +102,7 @@ export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
                     this._logger?.info('Browsing modules...');
             
                     for(const action of this._config.actions) {
-                        const shouldStop = await parseAction({ page, action, context: this._parseContext, logger: this._logger });
+                        const shouldStop = await parseAction({ page, action, context: this._parseContext, logger: this._logger, globalOptions: this.globalOptions });
                         if (shouldStop) break;
                     }
                 }, this._logger);
@@ -112,7 +112,7 @@ export class GScrapRunner extends EventEmitter<GScrapRunnerEventMap> {
                 } else {
                     this.emit('statusChange', { status: GScrapRunnerStatuses.COMPLETED })
                 }
-            });
+            }, this.globalOptions);
 
             await this._run;
         } catch(e) {

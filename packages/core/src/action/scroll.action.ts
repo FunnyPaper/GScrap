@@ -37,7 +37,7 @@ export async function parseScrollAction({ page, action, context, logger }: Actio
         }
     });
 
-    if(index == 0) {
+    if (index == 0) {
         logger?.warn('No elements found to be scrolled');
     }
 

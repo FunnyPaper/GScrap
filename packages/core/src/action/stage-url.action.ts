@@ -21,7 +21,7 @@ export type StageUrlAction = z.infer<typeof StageUrlActionScheme>;
 export async function parseStageUrlAction({ page, action, context, logger }: ActionParseConfig<StageUrlAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
-    
+
     await pin.use({
         page: page,
         task: async (handle: ElementHandle): Promise<void> => {

@@ -7,7 +7,7 @@ export const BoundActionScheme = z.intersection(
         binding: BindingScheme
     }),
     CommonActionScheme
-); 
+);
 
 /**
  * Action with binding semantics. It has the ability to utilize variables.

@@ -20,7 +20,7 @@ export type ClickAction = z.infer<typeof ClickActionScheme>;
 export async function parseClickAction({ page, action, context, logger }: ActionParseConfig<ClickAction>): Promise<boolean> {
     let index: number = 0;
     const pin: Pin = parseBinding(action.binding, context);
-    
+
     await pin.use({
         page: page,
         task: async (handle: ElementHandle): Promise<void> => {

@@ -64,7 +64,7 @@ export const NumberFormActionScheme = z.intersection(
  */
 export type NumberFormAction = z.infer<typeof NumberFormActionScheme>;
 
-export async function parseFillAction({ page, action, context, logger }: ActionParseConfig<Extract<Action, { fillType: string }>>): Promise<boolean> {    
+export async function parseFillAction({ page, action, context, logger }: ActionParseConfig<Extract<Action, { fillType: string }>>): Promise<boolean> {
     logger?.info('Filling elements...');
 
     let index: number = 0;
@@ -72,28 +72,28 @@ export async function parseFillAction({ page, action, context, logger }: ActionP
     await pin.use({
         page: page,
         task: async (handle: ElementHandle): Promise<void> => {
-            switch(action.fillType) {
-                case "string": 
+            switch (action.fillType) {
+                case "string":
                     logger?.info(`${++index}' text field filled with: ${action.data}`);
                     await handle.type(action.data as string);
                     break;
-                case "number": 
+                case "number":
                     logger?.info(`${++index}' Number field filled with ${action.data}`);
                     await handle.type(action.data.toString());
                     break;
-                case "boolean": 
+                case "boolean":
                     logger?.info(`${++index}' Checkable field set with ${action.data}`);
                     await handle.evaluate((element: Element, data: boolean) => {
-                        if(element instanceof HTMLInputElement) {
+                        if (element instanceof HTMLInputElement) {
                             element.checked = data;
                         }
                     }, action.data);
                     break;
-            }      
+            }
         }
     });
 
-    if(index == 0) {
+    if (index == 0) {
         logger?.warn('No elements found to be filled');
     }
 
