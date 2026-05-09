@@ -17,6 +17,7 @@ import { Logger } from "winston";
 import { parseStageUrlAction, StageUrlAction, StageUrlActionScheme } from "./stage-url.action.js";
 import { parseProcessUrlAction, ProcessUrlAction, ProcessUrlActionScheme } from "./process-url.action.js";
 import { ExportAction, ExportActionScheme, parseExportAction } from "./export.action.js";
+import { AutoScrollAction, AutoScrollActionScheme, parseAutoScrollAction } from "./autoscroll.action.js";
 
 /**
  * Marks element to be a subject of an Action.
@@ -30,6 +31,7 @@ export type Action =
     | ScrollAction
     | ForeachAction
     | PaginateAction
+    | AutoScrollAction
     | GoBackAction
     | SaveAction
     | GoForwardAction
@@ -49,6 +51,7 @@ export const ActionScheme: z.ZodType<Action> = z.union([
     ScrollActionScheme,
     ForeachActionScheme,
     PaginateActionScheme,
+    AutoScrollActionScheme,
     GoBackActionScheme,
     SaveActionScheme,
     GoForwardActionScheme,
@@ -67,6 +70,9 @@ export type ActionParseConfig<A extends Action = Action> = {
     logger?: Logger,
     globalOptions?: { headless?: boolean, cacheDir?: string }
 }
+
+// TODO: Refactor actions into classes with composition
+// Allow overriding specific actions if necessary
 
 export async function parseAction({ page, action, context, logger, globalOptions }: ActionParseConfig): Promise<boolean> {
     if (context.cancelled) return true;
@@ -91,6 +97,8 @@ export async function parseAction({ page, action, context, logger, globalOptions
             return await parseForeachAction({ page, action, context, logger, globalOptions });
         case "paginate":
             return await parsePaginateAction({ page, action, context, logger, globalOptions });
+        case "autoScroll":
+            return await parseAutoScrollAction({ page, action, context, logger, globalOptions });
         case "goBack":
             return await parseGoBackAction({ page, action, context, logger, globalOptions });
         case 'goForward':

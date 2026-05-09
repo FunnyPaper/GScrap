@@ -47,10 +47,9 @@ export async function parsePaginateAction({ page, action, context, logger, globa
                 task: async (handle: ElementHandle): Promise<void> => {
                     if (clickedSuccessfully) return;
 
-                    const isIntersecting = await handle.isIntersectingViewport();
                     const isVisible = await handle.isVisible();
 
-                    if (isVisible && isIntersecting) {
+                    if (isVisible) {
                         try {
                             logger?.info(`Heading over to next page...`);
                             await Promise.all([
