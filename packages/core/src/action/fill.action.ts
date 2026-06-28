@@ -1,68 +1,8 @@
 import { ElementHandle } from "puppeteer"
 import { parseBinding } from "../binding/index.js"
-import { BoundActionScheme } from "./bound.action.js"
 import { Pin } from "./pin.action.js"
-import { z } from "zod"
-import { Action, ActionParseConfig } from "./index.js"
-
-export const FillActionScheme = z.intersection(
-    z.strictObject({
-        type: z.literal('fill'),
-        /**
-         * Specifies value type used for filling.
-         */
-        fillType: z.unknown(),
-        /**
-         * Data used to fill form-like elements.
-         */
-        data: z.unknown()
-    }),
-    BoundActionScheme
-)
-
-/**
- * Marks selected element to be a host for fill event. Used to fill form fields.
- */
-export type FillAction = z.infer<typeof FillActionScheme>;
-
-export const BooleanFormActionScheme = z.intersection(
-    z.strictObject({
-        fillType: z.literal('boolean'),
-        data: z.boolean()
-    }),
-    FillActionScheme
-)
-
-/**
- * Marks selected element to be host for fill event. Fill value is of type boolean.
- */
-export type BooleanFormAction = z.infer<typeof BooleanFormActionScheme>;
-
-export const StringFormActionScheme = z.intersection(
-    z.strictObject({
-        fillType: z.literal('string'),
-        data: z.string()
-    }),
-    FillActionScheme
-)
-
-/**
- * Marks selected element to be host for fill event. Fill value is of type string.
- */
-export type StringFormAction = z.infer<typeof StringFormActionScheme>;
-
-export const NumberFormActionScheme = z.intersection(
-    z.strictObject({
-        fillType: z.literal('number'),
-        data: z.number()
-    }),
-    FillActionScheme
-)
-
-/**
- * Marks selected element to be host for fill event. Fill value is of type number.
- */
-export type NumberFormAction = z.infer<typeof NumberFormActionScheme>;
+import { ActionParseConfig } from "./index.js"
+import { Action } from "./schemas.js";
 
 export async function parseFillAction({ page, action, context, logger }: ActionParseConfig<Extract<Action, { fillType: string }>>): Promise<boolean> {
     logger?.info('Filling elements...');

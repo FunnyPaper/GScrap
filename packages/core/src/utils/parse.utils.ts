@@ -1,5 +1,5 @@
 import { ElementHandle, Page } from "puppeteer";
-import { ActionSelector } from "../action/pin.action.js";
+import { ActionSelector } from "../action/schemas.js";
 import { Logger } from "winston";
 
 export async function tryWaitForSelector(page: Page, selector: ActionSelector, path: string, logger?: Logger) {

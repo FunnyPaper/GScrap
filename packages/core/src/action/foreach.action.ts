@@ -1,34 +1,9 @@
-import { Action, ActionParseConfig, ActionScheme, parseAction } from "./index.js";
+import { ActionParseConfig, parseAction } from "./index.js";
+import { Action } from "./schemas.js";
 import { parseBinding } from "../binding/index.js";
 import { GScrapParseContext } from "../context/gscrap-parse.context.js";
-import { BoundAction, BoundActionScheme } from "./bound.action.js";
+import { ForeachAction } from "./schemas.js";
 import { Pin } from "./pin.action.js";
-import { z } from "zod";
-
-export const ForeachActionScheme: z.ZodType<{
-    type: 'foreach',
-    actions: Action[],
-    scopedVariable: string
-} & BoundAction> = z.intersection(
-    z.strictObject({
-        type: z.literal('foreach'),
-        /**
-         * Actions to execute in order.
-         */
-        actions: z.array(z.lazy(() => ActionScheme)),
-        /**
-         * Name of the variable created in scope.
-         */
-        scopedVariable: z.string()
-    }),
-    BoundActionScheme
-)
-
-/**
- * Action with foreach-like semantics. 
- * Binds to variable and creates a scoped variable with given name.
- */
-export type ForeachAction = z.infer<typeof ForeachActionScheme>;
 
 export async function parseForeachAction({ page, action, context, logger, globalOptions }: ActionParseConfig<ForeachAction>): Promise<boolean> {
     let index: number = 0;

@@ -1,67 +1,23 @@
 import { Page } from "puppeteer";
-import { ClickAction, ClickActionScheme, parseClickAction } from "./click.action.js";
-import { EvaluateAction, EvaluateActionScheme, parseEvaluateAction } from "./evaluate.action.js";
-import { parseFillAction, BooleanFormActionScheme, StringFormActionScheme, NumberFormActionScheme, BooleanFormAction, NumberFormAction, StringFormAction } from "./fill.action.js";
-import { ForeachAction, ForeachActionScheme, parseForeachAction } from "./foreach.action.js";
-import { GoBackAction, GoBackActionScheme, parseGoBackAction } from "./go-back.action.js";
-import { GoForwardAction, GoForwardActionScheme, parseGoForwardAction } from "./go-forward.action.js";
-import { GoToAction, GoToActionScheme, parseGoToAction } from "./go-to.action.js";
-import { PaginateAction, PaginateActionScheme, parsePaginateAction } from "./paginate.action.js";
-import { parsePinAction, PinAction, PinActionScheme } from "./pin.action.js";
-import { parseRefreshAction, RefreshAction, RefreshActionScheme } from "./refresh.action.js";
-import { parseSaveAction, SaveAction, SaveActionScheme } from "./save.action.js";
-import { parseScrollAction, ScrollAction, ScrollActionScheme } from "./scroll.action.js";
+import { parseClickAction } from "./click.action.js";
+import { Action } from "./schemas.js";
+import { parseEvaluateAction } from "./evaluate.action.js";
+import { parseFillAction } from "./fill.action.js";
+import { parseForeachAction } from "./foreach.action.js";
+import { parseGoBackAction } from "./go-back.action.js";
+import { parseGoForwardAction } from "./go-forward.action.js";
+import { parseGoToAction } from "./go-to.action.js";
+import { parsePaginateAction } from "./paginate.action.js";
+import { parsePinAction } from "./pin.action.js";
+import { parseRefreshAction } from "./refresh.action.js";
+import { parseSaveAction } from "./save.action.js";
+import { parseScrollAction } from "./scroll.action.js";
 import { GScrapParseContext } from "../context/gscrap-parse.context.js";
-import { z } from "zod";
 import { Logger } from "winston";
-import { parseStageUrlAction, StageUrlAction, StageUrlActionScheme } from "./stage-url.action.js";
-import { parseProcessUrlAction, ProcessUrlAction, ProcessUrlActionScheme } from "./process-url.action.js";
-import { ExportAction, ExportActionScheme, parseExportAction } from "./export.action.js";
-import { AutoScrollAction, AutoScrollActionScheme, parseAutoScrollAction } from "./autoscroll.action.js";
-
-/**
- * Marks element to be a subject of an Action.
- */
-export type Action =
-    | EvaluateAction
-    | ClickAction
-    | BooleanFormAction
-    | StringFormAction
-    | NumberFormAction
-    | ScrollAction
-    | ForeachAction
-    | PaginateAction
-    | AutoScrollAction
-    | GoBackAction
-    | SaveAction
-    | GoForwardAction
-    | RefreshAction
-    | GoToAction
-    | PinAction
-    | StageUrlAction
-    | ProcessUrlAction
-    | ExportAction
-
-export const ActionScheme: z.ZodType<Action> = z.union([
-    EvaluateActionScheme,
-    ClickActionScheme,
-    BooleanFormActionScheme,
-    StringFormActionScheme,
-    NumberFormActionScheme,
-    ScrollActionScheme,
-    ForeachActionScheme,
-    PaginateActionScheme,
-    AutoScrollActionScheme,
-    GoBackActionScheme,
-    SaveActionScheme,
-    GoForwardActionScheme,
-    RefreshActionScheme,
-    GoToActionScheme,
-    PinActionScheme,
-    StageUrlActionScheme,
-    ProcessUrlActionScheme,
-    ExportActionScheme
-])
+import { parseStageUrlAction } from "./stage-url.action.js";
+import { parseProcessUrlAction } from "./process-url.action.js";
+import { parseExportAction } from "./export.action.js";
+import { parseAutoScrollAction } from "./autoscroll.action.js";
 
 export type ActionParseConfig<A extends Action = Action> = {
     page: Page,

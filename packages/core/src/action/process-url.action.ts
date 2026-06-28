@@ -1,35 +1,9 @@
-import { Action, ActionParseConfig, ActionScheme, parseAction } from "./index.js";
-import { z } from "zod";
-import { CommonAction, CommonActionScheme } from "./common.action.js";
+import { ActionParseConfig, parseAction } from "./index.js";
+import { Action } from "./schemas.js";
+import { ProcessUrlAction } from "./schemas.js";
 import { GScrapParseContext } from "../context/gscrap-parse.context.js";
 import { Cluster } from "puppeteer-cluster";
 import { getBrowserExecutablePath, PuppeteerIgnoreArgs, PuppeteerLaunchOptions } from "../utils/browser.utils.js";
-
-export const ProcessUrlActionScheme: z.ZodType<{
-    type: 'processUrl',
-    actions: Action[],
-    group: string,
-} & CommonAction> = z.intersection(
-    z.strictObject({
-        type: z.literal('processUrl'),
-        /**
-         * Actions to execute in order.
-         */
-        actions: z.array(z.lazy(() => ActionScheme)),
-        /** 
-         * Stage storage name to retrieve urls from
-        */
-        group: z.string(),
-    }),
-    CommonActionScheme
-)
-
-/**
- * Action processing stored url groups with a group of actions. 
- * Executes actions in order. 
- * Loops until specified variable is no longer reachable.
- */
-export type ProcessUrlAction = z.infer<typeof ProcessUrlActionScheme>;
 
 export async function parseProcessUrlAction({ page, action, context, logger, globalOptions }: ActionParseConfig<ProcessUrlAction>): Promise<boolean> {
     const { headless = false, cacheDir } = globalOptions || {};

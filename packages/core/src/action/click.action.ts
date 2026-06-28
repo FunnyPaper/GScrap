@@ -1,21 +1,8 @@
 import { ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding/index.js";
-import { BoundActionScheme } from "./bound.action.js";
+import { ClickAction } from "./schemas.js";
 import { Pin } from "./pin.action.js";
-import { z } from "zod";
 import { ActionParseConfig } from "./index.js";
-
-export const ClickActionScheme = z.intersection(
-    z.strictObject({
-        type: z.literal('click')
-    }),
-    BoundActionScheme
-)
-
-/**
- * Marks selected element to be clicked. Used to perform side effects.
- */
-export type ClickAction = z.infer<typeof ClickActionScheme>;
 
 export async function parseClickAction({ page, action, context, logger }: ActionParseConfig<ClickAction>): Promise<boolean> {
     let index: number = 0;

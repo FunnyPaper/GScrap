@@ -1,28 +1,8 @@
 import { ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding/index.js";
-import { BoundActionScheme } from "./bound.action.js";
+import { ScrollAction } from "./schemas.js";
 import { Pin } from "./pin.action.js";
-import { z } from "zod";
 import { ActionParseConfig } from "./index.js";
-
-export const ScrollActionScheme = z.intersection(
-    z.strictObject({
-        type: z.literal('scroll'),
-        /**
-         * How much should the host be scrolled along X and Y axis.
-         */
-        scrollBy: z.strictObject({
-            x: z.number(),
-            y: z.number()
-        })
-    }),
-    BoundActionScheme
-)
-
-/**
- * Marks selected element to be a host for scrolling. Used to perform side effects.
- */
-export type ScrollAction = z.infer<typeof ScrollActionScheme>;
 
 export async function parseScrollAction({ page, action, context, logger }: ActionParseConfig<ScrollAction>): Promise<boolean> {
     let index: number = 0;

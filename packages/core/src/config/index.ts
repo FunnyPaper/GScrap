@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ActionScheme } from "../action/index.js";
+import { ActionScheme } from "../action/schemas.js";
 
 export const GScrapConfigScheme = z.strictObject({
     /**

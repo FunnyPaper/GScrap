@@ -1,38 +1,9 @@
 import { ElementHandle } from "puppeteer";
-import { Action, ActionParseConfig, ActionScheme, parseAction } from "./index.js";
+import { ActionParseConfig, parseAction } from "./index.js";
+import { Action } from "./schemas.js";
 import { parseBinding } from "../binding/index.js";
-import { BoundAction, BoundActionScheme } from "./bound.action.js";
 import { Pin } from "./pin.action.js";
-import { z } from "zod";
-
-export const AutoScrollActionScheme: z.ZodType<{
-    type: 'autoScroll',
-    actions: Action[],
-    count: number | 'limitless'
-} & BoundAction> = z.intersection(
-    z.strictObject({
-        type: z.literal('autoScroll'),
-        /**
-         * Actions to execute in order.
-         */
-        actions: z.array(z.lazy(() => ActionScheme)),
-        /**
-         * How many times the scroll should be performed
-         */
-        count: z.union([
-            z.number(),
-            z.literal('limitless')
-        ])
-    }),
-    BoundActionScheme
-)
-
-/**
- * Action with autoscroll-like semantics.
- * Executes actions in order.
- * Loops until specified variable is no longer reachable or until scroll is performed "count" amount of times
- */
-export type AutoScrollAction = z.infer<typeof AutoScrollActionScheme>;
+import { AutoScrollAction } from "./schemas.js";
 
 export async function parseAutoScrollAction({ page, action, context, logger, globalOptions }: ActionParseConfig<AutoScrollAction>): Promise<boolean> {
     const pin: Pin = parseBinding(action.binding, context);

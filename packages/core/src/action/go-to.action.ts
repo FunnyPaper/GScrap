@@ -1,22 +1,5 @@
-import { CommonActionScheme } from "./common.action.js";
-import { z } from "zod";
+import { GoToAction } from "./schemas.js";
 import { ActionParseConfig } from "./index.js";
-
-export const GoToActionScheme = z.intersection(
-    z.strictObject({
-        type: z.literal('goTo'),
-        /**
-         * Adress used in navigation change process.
-         */
-        url: z.string()
-    }),
-    CommonActionScheme
-)
-
-/**
- * Action requesting the history change (sudden navigation change).
- */
-export type GoToAction = z.infer<typeof GoToActionScheme>;
 
 export async function parseGoToAction({ page, action, context, logger }: ActionParseConfig<GoToAction>): Promise<boolean> {
     logger?.info(`Going to page ${action.url}...`);

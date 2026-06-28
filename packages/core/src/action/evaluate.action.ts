@@ -1,28 +1,8 @@
 import { ElementHandle } from "puppeteer";
 import { parseBinding } from "../binding/index.js";
-import { BoundActionScheme } from "./bound.action.js";
+import { EvaluateAction } from "./schemas.js";
 import { Pin } from "./pin.action.js";
-import { z } from "zod";
 import { ActionParseConfig } from "./index.js";
-
-export const EvaluateActionScheme = z.intersection(
-    z.strictObject({
-        type: z.literal('evaluate'),
-        /**
-         * Alias used for human readable output. 
-         * If not specified application will try to use id, full class name or whole selector. 
-         */
-        elementAlias: z.string().optional()
-    }),
-    BoundActionScheme
-)
-
-/**
- * Marks selected element to be evaluated and its value should be obtained. 
- * The target property or properties depends on the type of element itself and is determined at runtime -
- * It can point to input's value field, img's src field, etc.
- */
-export type EvaluateAction = z.infer<typeof EvaluateActionScheme>;
 
 export async function parseEvaluateAction({ page, action, context, logger }: ActionParseConfig<EvaluateAction>): Promise<boolean> {
     context.data['url'] = page.url();

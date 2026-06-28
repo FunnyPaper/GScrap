@@ -1,30 +1,9 @@
 import { ElementHandle } from "puppeteer";
-import { Action, ActionParseConfig, ActionScheme, parseAction } from "./index.js";
+import { ActionParseConfig, parseAction } from "./index.js";
+import { Action } from "./schemas.js";
 import { parseBinding } from "../binding/index.js";
-import { BoundAction, BoundActionScheme } from "./bound.action.js";
+import { PaginateAction } from "./schemas.js";
 import { Pin } from "./pin.action.js";
-import { z } from "zod";
-
-export const PaginateActionScheme: z.ZodType<{
-    type: 'paginate',
-    actions: Action[]
-} & BoundAction> = z.intersection(
-    z.strictObject({
-        type: z.literal('paginate'),
-        /**
-         * Actions to execute in order.
-         */
-        actions: z.array(z.lazy(() => ActionScheme)),
-    }),
-    BoundActionScheme
-)
-
-/**
- * Action with paginate-like semantics. 
- * Executes actions in order. 
- * Loops until specified variable is no longer reachable.
- */
-export type PaginateAction = z.infer<typeof PaginateActionScheme>;
 
 export async function parsePaginateAction({ page, action, context, logger, globalOptions }: ActionParseConfig<PaginateAction>): Promise<boolean> {
     let index: number = 0;

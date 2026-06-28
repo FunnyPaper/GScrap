@@ -1,5 +1,6 @@
 import { Logger } from "winston";
-import { Pin, ActionSelector } from "../action/pin.action.js";
+import { Pin } from "../action/pin.action.js";
+import { ActionSelector } from "../action/schemas.js";
 import { GScrapParseContextVisitor } from "./gscrap-parse.context.visitor.js";
 import { IStore } from "../store/istore.js";
 
