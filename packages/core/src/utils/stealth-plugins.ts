@@ -1,7 +1,7 @@
 // Normally we would use the stealth plugin itself but due to how each evasion is imported at runtime
 // we need to import each plugin manually for easier consumer builds
 
-import puppeteerExtra from "puppeteer-extra";
+import puppeteerExtra from 'puppeteer-extra';
 import ChromeAppPlugin from 'puppeteer-extra-plugin-stealth/evasions/chrome.app/index.js';
 import ChromeCsiPlugin from 'puppeteer-extra-plugin-stealth/evasions/chrome.csi/index.js';
 import ChromeLoadTimesPlugin from 'puppeteer-extra-plugin-stealth/evasions/chrome.loadTimes/index.js';

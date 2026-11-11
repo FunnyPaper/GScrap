@@ -16,10 +16,14 @@
     "scripts": {
         "build": "npm run --ws build --if-present",
         "prepare": "npm run build",
-        "test": "npm run --ws test --if-present"
+        "test": "npm run --ws test --if-present",
+        "format": "prettier packages --write"
     },
     "workspaces": [
         "packages/core",
         "packages/cli"
-    ]
+    ],
+    "devDependencies": {
+        "prettier": "3.8.x"
+    }
 }

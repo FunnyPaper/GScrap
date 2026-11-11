@@ -1,13 +1,18 @@
-import { Pin } from "../action/pin.action.js";
-import { GScrapParseContext } from "../context/gscrap-parse.context.js";
-import { VariableBinding } from "../action/schemas.js";
+import { Pin } from '../action/pin.action.js';
+import { GScrapParseContext } from '../context/gscrap-parse.context.js';
+import { VariableBinding } from '../action/schemas.js';
 
-export function parseVariableBinding(binding: VariableBinding, context: GScrapParseContext): Pin {
-    const pin: Pin | undefined = context.getPin(binding.data);
-    
-    if(!pin) {
-        throw new Error(`Variable binding error. There's no pin for: ${binding.data}.`);
-    }
+export function parseVariableBinding(
+  binding: VariableBinding,
+  context: GScrapParseContext,
+): Pin {
+  const pin: Pin | undefined = context.getPin(binding.data);
 
-    return pin;
+  if (!pin) {
+    throw new Error(
+      `Variable binding error. There's no pin for: ${binding.data}.`,
+    );
+  }
+
+  return pin;
 }

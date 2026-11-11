@@ -1,6 +1,6 @@
-import path from "path";
-import "./stealth-plugins.js";
-import { Browser } from "puppeteer";
+import path from 'path';
+import './stealth-plugins.js';
+import { Browser } from 'puppeteer';
 import puppeteerExtra from 'puppeteer-extra';
 import * as fs from 'fs';
 
@@ -14,16 +14,14 @@ export const PuppeteerLaunchOptions: string[] = [
   '--disable-dev-shm-usage',
   '--window-position=0,0',
   '--ignore-certificate-errors',
-  '--disable-features=BackForwardCache'
-]
+  '--disable-features=BackForwardCache',
+];
 
-export const PuppeteerIgnoreArgs: string[] = [
-  '--enable-automation'
-]
+export const PuppeteerIgnoreArgs: string[] = ['--enable-automation'];
 
 export async function withBrowser<T = void>(
   task: (browser: Browser) => Promise<T>,
-  config?: { headless?: boolean, cacheDir?: string },
+  config?: { headless?: boolean; cacheDir?: string },
 ): Promise<T> {
   const { headless = false, cacheDir } = config || {};
 
@@ -33,12 +31,12 @@ export async function withBrowser<T = void>(
       executablePath: getBrowserExecutablePath(cacheDir),
       env: {
         PUPPETEER_CACHE_DIR: cacheDir,
-        PUPPETEER_EXECUTABLE_PATH: getBrowserExecutablePath(cacheDir)
+        PUPPETEER_EXECUTABLE_PATH: getBrowserExecutablePath(cacheDir),
       },
     }),
     headless: headless,
     args: PuppeteerLaunchOptions,
-    ignoreDefaultArgs: PuppeteerIgnoreArgs
+    ignoreDefaultArgs: PuppeteerIgnoreArgs,
   });
 
   try {
@@ -52,15 +50,22 @@ export function getBrowserExecutablePath(cacheDir: string) {
   const chromeDir = path.join(cacheDir, 'chrome');
 
   if (!fs.existsSync(chromeDir)) {
-    throw new Error(`Could not find chrome path in cache. Ssearched for: ${chromeDir}`);
+    throw new Error(
+      `Could not find chrome path in cache. Ssearched for: ${chromeDir}`,
+    );
   }
 
   const folders = fs.readdirSync(chromeDir);
   if (folders.length === 0) {
-    throw new Error("Chrome folder is empty!");
+    throw new Error('Chrome folder is empty!');
   }
 
-  const chromeExePath = path.join(chromeDir, folders[0], "chrome-win64", "chrome.exe");
+  const chromeExePath = path.join(
+    chromeDir,
+    folders[0],
+    'chrome-win64',
+    'chrome.exe',
+  );
   if (!fs.existsSync(chromeExePath)) {
     throw new Error(`chrome.exe not found in path: ${chromeExePath}`);
   }
